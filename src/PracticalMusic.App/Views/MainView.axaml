@@ -1,0 +1,70 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:PracticalMusic.App.ViewModels"
+             xmlns:conv="using:PracticalMusic.App.Converters"
+             x:Class="PracticalMusic.App.Views.MainView"
+             x:Name="Root">
+  <Panel>
+    <Grid RowDefinitions="Auto,*,Auto">
+      <!-- navigation bar -->
+      <Border Grid.Row="0" Classes="navbar" Padding="8,6">
+        <Grid ColumnDefinitions="Auto,*,Auto">
+          <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="2">
+            <ToggleButton Classes="nav" Content="📚 Library" IsChecked="{Binding IsLibrarySelected, Mode=OneWay}" Command="{Binding ShowLibraryCommand}" />
+            <ToggleButton Classes="nav" Content="▶ Play" IsChecked="{Binding IsPlayerSelected, Mode=OneWay}" Command="{Binding ShowPlayerCommand}" />
+            <ToggleButton Classes="nav" Content="📡 Share" IsChecked="{Binding IsShareSelected, Mode=OneWay}" Command="{Binding ShowShareCommand}" />
+            <ToggleButton Classes="nav" Content="ℹ About" IsChecked="{Binding IsAboutSelected, Mode=OneWay}" Command="{Binding ShowAboutCommand}" />
+          </StackPanel>
+          <TextBlock Grid.Column="2" Text="{Binding Title}" VerticalAlignment="Center" Margin="12,0,4,0" Classes="muted" TextTrimming="CharacterEllipsis" />
+        </Grid>
+      </Border>
+
+      <!-- current page -->
+      <ContentControl Grid.Row="1" Content="{Binding CurrentView}" />
+
+      <!-- status bar -->
+      <Border Grid.Row="2" Classes="navbar" Padding="10,4">
+        <TextBlock Text="{Binding StatusText}" FontSize="12" TextTrimming="CharacterEllipsis" />
+      </Border>
+    </Grid>
+
+    <!-- modal dialog overlay -->
+    <Border Background="#88000000" IsVisible="{Binding Dialogs.HasDialog}" ZIndex="100">
+      <Border Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}"
+              CornerRadius="10" Padding="20" MaxWidth="520" MinWidth="320"
+              HorizontalAlignment="Center" VerticalAlignment="Center"
+              BoxShadow="0 8 32 0 #80000000"
+              DataContext="{Binding Dialogs.Current}">
+        <StackPanel Spacing="12">
+          <TextBlock Text="{Binding Title}" Classes="h2" Margin="0" />
+          <TextBlock Text="{Binding Message}" TextWrapping="Wrap" />
+          <TextBlock Text="{Binding InputLabel}" IsVisible="{Binding InputLabel, Converter={x:Static conv:AppConverters.IsNotEmpty}}" Classes="muted" FontSize="12" Margin="0,0,0,-8" />
+          <TextBox Text="{Binding InputText, Mode=TwoWay}" IsVisible="{Binding HasInput}" x:Name="DialogInput" />
+          <Grid ColumnDefinitions="Auto,*,16,Auto,*" IsVisible="{Binding HasRange}">
+            <TextBlock Grid.Column="0" Text="{Binding FromLabel}" Classes="label" />
+            <NumericUpDown Grid.Column="1" Value="{Binding RangeFrom, Mode=TwoWay}" Minimum="{Binding RangeMin}" Maximum="{Binding RangeMax}" Increment="1" FormatString="0" ClipValueToMinMax="True" MinWidth="110" />
+            <TextBlock Grid.Column="3" Text="{Binding ToLabel}" Classes="label" />
+            <NumericUpDown Grid.Column="4" Value="{Binding RangeTo, Mode=TwoWay}" Minimum="{Binding RangeMin}" Maximum="{Binding RangeMax}" Increment="1" FormatString="0" ClipValueToMinMax="True" MinWidth="110" />
+          </Grid>
+          <TextBlock Text="{Binding Hint}" IsVisible="{Binding Hint, Converter={x:Static conv:AppConverters.IsNotEmpty}}" Classes="muted" FontSize="12" TextWrapping="Wrap" />
+          <ProgressBar Value="{Binding Progress}" Minimum="0" Maximum="1" IsVisible="{Binding ShowProgress}" Height="8" />
+          <ItemsControl ItemsSource="{Binding Buttons}" HorizontalAlignment="Right">
+            <ItemsControl.ItemsPanel>
+              <ItemsPanelTemplate>
+                <StackPanel Orientation="Horizontal" Spacing="8" />
+              </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <Button Content="{Binding Text}" MinWidth="90"
+                        Classes.accent="{Binding IsAccent}"
+                        Command="{Binding $parent[ItemsControl].DataContext.ChooseCommand}"
+                        CommandParameter="{Binding}" />
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </StackPanel>
+      </Border>
+    </Border>
+  </Panel>
+</UserControl>

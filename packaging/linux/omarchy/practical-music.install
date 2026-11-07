@@ -1,0 +1,37 @@
+# pacman install hooks for practical-music (Omarchy / Arch).
+# Prints the firewall rules the app needs; never changes the firewall itself.
+
+_firewall_hint() {
+  if command -v ufw >/dev/null 2>&1 && { systemctl is-active --quiet ufw 2>/dev/null || grep -qs '^ENABLED=yes' /etc/ufw/ufw.conf; }; then
+    cat <<'MSG'
+
+==> The ufw firewall is active. Practical Music needs two inbound ports from your LAN
+    (UDP 47312 discovery + synchronized playback, TCP 47313 book transfers), otherwise other
+    devices cannot find this machine and Send/Request book fail. Replace 192.168.1.0/24 with
+    your LAN ('ip -4 addr' shows it) and run:
+
+      sudo ufw allow in from 192.168.1.0/24 to any port 47312 proto udp comment 'Practical Music discovery'
+      sudo ufw allow in from 192.168.1.0/24 to any port 47313 proto tcp comment 'Practical Music transfer'
+
+    Details: /usr/share/doc/practical-music/INSTALL-Linux.md
+MSG
+  fi
+}
+
+post_install() {
+  update-desktop-database -q /usr/share/applications 2>/dev/null || true
+  update-mime-database /usr/share/mime 2>/dev/null || true
+  echo "==> Practical Music needs 'vlc' (libvlc) for audio playback; it was installed as a dependency."
+  _firewall_hint
+}
+
+post_upgrade() {
+  update-desktop-database -q /usr/share/applications 2>/dev/null || true
+  update-mime-database /usr/share/mime 2>/dev/null || true
+  _firewall_hint
+}
+
+post_remove() {
+  update-desktop-database -q /usr/share/applications 2>/dev/null || true
+  update-mime-database /usr/share/mime 2>/dev/null || true
+}

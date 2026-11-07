@@ -1,0 +1,19 @@
+# build output
+bin/
+obj/
+dist/
+*.user
+*.suo
+.vs/
+.idea/
+*.swp
+TestResults/
+
+# packaging scratch
+packaging/linux/omarchy/pkg/
+packaging/linux/omarchy/src/
+packaging/linux/omarchy/*.pkg.tar.*
+*.log
+
+# local test data (PDF/MP3 samples are not part of the repo)
+testdata/

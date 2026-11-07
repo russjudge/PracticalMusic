@@ -1,0 +1,202 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:conv="using:PracticalMusic.App.Converters"
+             x:Class="PracticalMusic.App.Views.LibraryView"
+             x:Name="Root"
+             DragDrop.AllowDrop="True">
+  <Grid RowDefinitions="Auto,*">
+    <!-- toolbar: book file operations only -->
+    <Border Grid.Row="0" Padding="8,6" Classes="navbar">
+      <WrapPanel Orientation="Horizontal" ItemSpacing="6" LineSpacing="6">
+        <Button Content="New" Command="{Binding NewBookCommand}" ToolTip.Tip="Start an empty book" />
+        <Button Content="Open…" Command="{Binding OpenBookCommand}" ToolTip.Tip="Open a .pmbook file" />
+        <Button Content="💾 Save (with media)" Command="{Binding SaveEmbeddedCommand}" ToolTip.Tip="Self-contained .pmbook: PDF and audio are embedded, easy to transfer" />
+        <Button Content="🔗 Save (links only)" Command="{Binding SaveLinksCommand}" ToolTip.Tip="Small .pmbook that only points at the PDF and audio files" />
+        <Button Content="Save as ▾">
+          <Button.Flyout>
+            <MenuFlyout>
+              <MenuItem Header="With media embedded…" Command="{Binding SaveEmbeddedAsCommand}" />
+              <MenuItem Header="Links only…" Command="{Binding SaveLinksAsCommand}" />
+            </MenuFlyout>
+          </Button.Flyout>
+        </Button>
+        <Border Width="1" Background="Gray" Opacity="0.4" Margin="4,0" />
+        <StackPanel Orientation="Horizontal" Spacing="6">
+          <TextBlock Text="Book title:" Classes="label" />
+          <TextBox Text="{Binding BookTitle, Mode=TwoWay}" MinWidth="200" />
+        </StackPanel>
+      </WrapPanel>
+    </Border>
+
+    <Grid Grid.Row="1" ColumnDefinitions="360,4,*">
+      <!-- left: the guided flow -->
+      <Grid Grid.Column="0" RowDefinitions="Auto,*">
+        <!-- step chips stay visible while the panel below scrolls -->
+        <WrapPanel Grid.Row="0" ItemSpacing="4" LineSpacing="4" Margin="8,8,8,4">
+          <Border Classes="step" Background="{Binding Step1State, Converter={x:Static conv:AppConverters.StepBrush}}"><TextBlock Text="1 · PDF" FontSize="12" Foreground="{Binding Step1State, Converter={x:Static conv:AppConverters.StepForeground}}" /></Border>
+          <Border Classes="step" Background="{Binding Step2State, Converter={x:Static conv:AppConverters.StepBrush}}"><TextBlock Text="2 · Songs" FontSize="12" Foreground="{Binding Step2State, Converter={x:Static conv:AppConverters.StepForeground}}" /></Border>
+          <Border Classes="step" Background="{Binding Step3State, Converter={x:Static conv:AppConverters.StepBrush}}"><TextBlock Text="3 · Recordings" FontSize="12" Foreground="{Binding Step3State, Converter={x:Static conv:AppConverters.StepForeground}}" /></Border>
+          <Border Classes="step" Background="{Binding Step4State, Converter={x:Static conv:AppConverters.StepBrush}}"><TextBlock Text="4 · Timing" FontSize="12" Foreground="{Binding Step4State, Converter={x:Static conv:AppConverters.StepForeground}}" /></Border>
+        </WrapPanel>
+        <ScrollViewer Grid.Row="1" Padding="8,4,8,8">
+        <StackPanel Spacing="4">
+          <!-- step 1: PDF -->
+          <Border Classes="section">
+            <StackPanel Spacing="6">
+              <TextBlock Classes="h2" Margin="0" Text="1 · Sheet music (PDF)" />
+              <TextBlock Text="{Binding PageCountText}" Classes="muted" FontSize="12" />
+              <ItemsControl ItemsSource="{Binding Documents}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate>
+                    <Grid ColumnDefinitions="*,Auto,Auto,Auto" Margin="0,2">
+                      <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                        <TextBlock Text="{Binding Name}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                        <TextBlock Text="{Binding PageCount, StringFormat='{}{0} pages'}" Classes="muted" FontSize="12" />
+                      </StackPanel>
+                      <Button Grid.Column="1" Content="↑" Classes="icon" Command="{Binding #Root.DataContext.MoveDocumentUpCommand}" CommandParameter="{Binding}" ToolTip.Tip="Move up" />
+                      <Button Grid.Column="2" Content="↓" Classes="icon" Command="{Binding #Root.DataContext.MoveDocumentDownCommand}" CommandParameter="{Binding}" ToolTip.Tip="Move down" />
+                      <Button Grid.Column="3" Content="✕" Classes="icon" Command="{Binding #Root.DataContext.RemoveDocumentCommand}" CommandParameter="{Binding}" ToolTip.Tip="Remove this PDF from the book" />
+                    </Grid>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+              <Button Content="📄 Add PDF…" Command="{Binding AddPdfCommand}" Classes.accent="{Binding IsStep1}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" ToolTip.Tip="Add a PDF with sheet music (or drop the file anywhere in the Library)" />
+            </StackPanel>
+          </Border>
+
+          <!-- step 2: songs -->
+          <Border Classes="section" IsVisible="{Binding HasPages}">
+            <StackPanel Spacing="6">
+              <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Grid.Column="0" Classes="h2" Margin="0" Text="2 · Songs" VerticalAlignment="Center" />
+                <Button Grid.Column="1" Content="➕ Add song" Command="{Binding AddSongCommand}" Classes.accent="{Binding IsStep2}" ToolTip.Tip="Define a song: its title and which pages belong to it" />
+              </Grid>
+              <TextBlock Text="{Binding SongsHelpText}" Classes="muted" FontSize="12" TextWrapping="Wrap" />
+              <ListBox ItemsSource="{Binding Songs}" SelectedItem="{Binding SelectedSong, Mode=TwoWay}" MaxHeight="300" x:Name="SongsList" AutoScrollToSelectedItem="False"
+                       ToolTip.Tip="Drop MP3 files onto a song to add them as its recordings">
+                <ListBox.ItemTemplate>
+                  <DataTemplate>
+                    <Grid ColumnDefinitions="*,Auto">
+                      <StackPanel Grid.Column="0">
+                        <TextBlock Text="{Binding Title}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                        <TextBlock Text="{Binding Summary}" Classes="muted" FontSize="12" TextTrimming="CharacterEllipsis" />
+                      </StackPanel>
+                      <TextBlock Grid.Column="1" Text="🎵" VerticalAlignment="Center" IsVisible="{Binding HasRecordings}" Opacity="0.7" />
+                    </Grid>
+                  </DataTemplate>
+                </ListBox.ItemTemplate>
+              </ListBox>
+
+              <!-- selected song: everything you can do with it -->
+              <Border Classes="selected-song" IsVisible="{Binding HasSelectedSong}">
+                <StackPanel Spacing="6">
+                  <TextBlock Text="Selected song" Classes="muted" FontSize="11" />
+                  <TextBlock Text="{Binding SelectedSong.Title}" FontWeight="SemiBold" FontSize="15" TextTrimming="CharacterEllipsis" />
+                  <TextBlock Text="{Binding SelectedSong.PagesText}" Classes="muted" FontSize="12" />
+                  <WrapPanel ItemSpacing="4" LineSpacing="4">
+                    <Button Content="▶ Play" Classes="accent" Command="{Binding PlaySongCommand}" IsEnabled="{Binding SelectedSongHasRecordings}" ToolTip.Tip="Open this song in the player" />
+                    <Button Content="⏱ Edit timing…" Command="{Binding EditTimingCommand}" IsEnabled="{Binding SelectedSongHasRecordings}" Classes.accent="{Binding IsStep4}"
+                            ToolTip.Tip="Mark when each page starts in the recording and add markers (needs a recording)" />
+                    <Button Content="Rename" Command="{Binding RenameSongCommand}" />
+                    <Button Content="Pages…" Command="{Binding EditSongPagesCommand}" ToolTip.Tip="Change the first and last page of this song" />
+                    <Button Content="Remove" Command="{Binding RemoveSongCommand}" ToolTip.Tip="Remove the song (the PDF pages stay)" />
+                  </WrapPanel>
+
+                  <TextBlock Text="3 · Recordings of this song" FontWeight="SemiBold" Margin="0,8,0,0" />
+                  <TextBlock Text="Drop MP3 files onto the song, or:" Classes="muted" FontSize="12" />
+                  <WrapPanel ItemSpacing="4" LineSpacing="4">
+                    <Button Content="🎵 Add MP3…" Command="{Binding AddRecordingCommand}" Classes.accent="{Binding IsStep3}" ToolTip.Tip="Add one or more audio files to this song" />
+                    <Button Content="🌐 Add from URL…" Command="{Binding AddRecordingUrlCommand}" ToolTip.Tip="Direct link to an audio file on the web (https://…/song.mp3)" />
+                  </WrapPanel>
+                  <ListBox ItemsSource="{Binding SelectedSong.Recordings}" SelectedItem="{Binding SelectedRecording, Mode=TwoWay}" MaxHeight="220" IsVisible="{Binding SelectedSongHasRecordings}" AutoScrollToSelectedItem="False">
+                    <ListBox.ItemTemplate>
+                      <DataTemplate>
+                        <StackPanel>
+                          <TextBlock Text="{Binding Name}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                          <TextBlock Text="{Binding FileName}" Classes="muted" FontSize="11" TextTrimming="CharacterEllipsis" />
+                          <TextBlock Text="{Binding Status}" FontSize="11" TextWrapping="Wrap" Foreground="{Binding IsMissing, Converter={x:Static conv:AppConverters.MissingBrush}}" />
+                        </StackPanel>
+                      </DataTemplate>
+                    </ListBox.ItemTemplate>
+                  </ListBox>
+                  <WrapPanel ItemSpacing="4" LineSpacing="4" IsVisible="{Binding HasSelectedRecording}">
+                    <TextBlock Text="Selected recording:" Classes="label" FontSize="12" Opacity="0.7" />
+                    <Button Content="Rename" FontSize="12" Command="{Binding RenameRecordingCommand}" ToolTip.Tip="e.g. Vocals, Piano, Click track" />
+                    <Button Content="Remove" FontSize="12" Command="{Binding RemoveRecordingCommand}" />
+                    <Button Content="Locate file…" FontSize="12" Command="{Binding LocateRecordingCommand}" IsVisible="{Binding SelectedRecordingIsMissing}" ToolTip.Tip="The audio file was moved: point the recording at it again" />
+                  </WrapPanel>
+                </StackPanel>
+              </Border>
+            </StackPanel>
+          </Border>
+        </StackPanel>
+        </ScrollViewer>
+      </Grid>
+
+      <GridSplitter Grid.Column="1" Background="Transparent" />
+
+      <!-- right: page overview -->
+      <Grid Grid.Column="2" RowDefinitions="Auto,Auto,*">
+        <Border Grid.Row="0" Classes="hintbar">
+          <TextBlock Text="{Binding StepHint}" TextWrapping="Wrap" />
+        </Border>
+        <Border Grid.Row="1" Padding="8,6" Classes="navbar" IsVisible="{Binding HasSelectedPage}">
+          <WrapPanel ItemSpacing="6" LineSpacing="6">
+            <TextBlock Text="{Binding SelectedPageInfo}" FontWeight="SemiBold" Classes="label" />
+            <Button Content="🎶 New song starts here" Command="{Binding AddSongAtPageCommand}" CommandParameter="{Binding SelectedPage}" IsVisible="{Binding CanStartSongAtSelectedPage}" ToolTip.Tip="Define a new song that begins on this page" />
+            <Button Content="{Binding SetStartText}" Command="{Binding SetSongStartCommand}" CommandParameter="{Binding SelectedPage}" IsVisible="{Binding CanSetSelectedSongStart}" ToolTip.Tip="Make this page the first page of the selected song" />
+            <Button Content="{Binding SetEndText}" Command="{Binding SetSongEndCommand}" CommandParameter="{Binding SelectedPage}" IsVisible="{Binding CanSetSelectedSongEnd}" ToolTip.Tip="Make this page the last page of the selected song" />
+          </WrapPanel>
+        </Border>
+        <Panel Grid.Row="2">
+          <!-- step 1 call to action -->
+          <StackPanel IsVisible="{Binding !HasPages}" HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="12" MaxWidth="460">
+            <TextBlock Text="📄" FontSize="56" HorizontalAlignment="Center" Opacity="0.6" />
+            <TextBlock Text="Start with your sheet music" FontSize="22" FontWeight="SemiBold" HorizontalAlignment="Center" />
+            <TextBlock Text="Add the PDF that contains the songs. One PDF can hold many songs; you will mark where each song starts and ends in the next step."
+                       Classes="muted" TextWrapping="Wrap" TextAlignment="Center" />
+            <Button Content="📄 Add PDF…" Classes="accent big" FontSize="18" Command="{Binding AddPdfCommand}" HorizontalAlignment="Center" />
+            <TextBlock Text="…or drop a PDF file anywhere in this window." Classes="muted" HorizontalAlignment="Center" FontSize="12" />
+          </StackPanel>
+
+          <ListBox ItemsSource="{Binding Pages}" SelectedItem="{Binding SelectedPage, Mode=TwoWay}" Background="Transparent" x:Name="PagesList" IsVisible="{Binding HasPages}">
+            <ListBox.ItemsPanel>
+              <ItemsPanelTemplate>
+                <WrapPanel />
+              </ItemsPanelTemplate>
+            </ListBox.ItemsPanel>
+            <ListBox.ItemTemplate>
+              <DataTemplate>
+                <Border Width="170" Padding="4" CornerRadius="6"
+                        Background="{Binding IsSelectedSong, Converter={x:Static conv:AppConverters.SelectedSongBrush}}">
+                  <StackPanel Spacing="3">
+                    <Border Height="200" Background="White" CornerRadius="3" BorderBrush="Gray" BorderThickness="1">
+                      <Image Source="{Binding Thumbnail}" Stretch="Uniform" />
+                    </Border>
+                    <TextBlock Text="{Binding Caption}" FontWeight="SemiBold" FontSize="12" />
+                    <TextBlock Text="{Binding SubCaption}" Classes="muted" FontSize="11" TextTrimming="CharacterEllipsis" />
+                    <TextBlock Text="{Binding SongTitle}" FontSize="12" TextTrimming="CharacterEllipsis"
+                               Foreground="{Binding !IsInSong, Converter={x:Static conv:AppConverters.MissingBrush}}"
+                               FontStyle="{Binding !IsInSong, Converter={x:Static conv:AppConverters.ItalicIfTrue}}" />
+                  </StackPanel>
+                </Border>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+            <ListBox.Styles>
+              <Style Selector="ListBoxItem">
+                <Setter Property="Padding" Value="4" />
+                <Setter Property="Margin" Value="2" />
+              </Style>
+            </ListBox.Styles>
+          </ListBox>
+          <Border Background="#66000000" IsVisible="{Binding IsBusy}">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="8">
+              <ProgressBar IsIndeterminate="True" Width="240" />
+              <TextBlock Text="{Binding BusyText}" Foreground="White" HorizontalAlignment="Center" />
+            </StackPanel>
+          </Border>
+        </Panel>
+      </Grid>
+    </Grid>
+  </Grid>
+</UserControl>

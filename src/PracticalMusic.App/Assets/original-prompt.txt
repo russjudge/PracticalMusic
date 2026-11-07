@@ -1,0 +1,29 @@
+Create an application that will run on Windows, Linux, and Android.  The root path to the code for this application is c:\Development\PracticalMusic.  The name of the application that I came up with is "Practical Music", but if you prefer a different name, you can change the name.
+
+Although strong preference is for C# and .NET 10, you do not need to be limited to C# and .NET 10 If another programming language will work significantly better.  Use whatever programming language makes the most sense for this, and can be used with the computer you are currently running on--let me know if I need to install one before proceeding, however.
+
+A user should be able to import pdf files and mp3 files.
+
+The pdf files will contain sheet music.  Multiple songs could be in the pdf, and each song could be multiple pages.
+
+Give the user the means to link mp3 files to the pdf files, and indicate which pages link to which mp3 files.  In addition, through the use of timing, give the user the capability to indicate what part of the mp3 links to which page.  The pages of each song will be consecutive, so the first part of the mp3 will always link to first page of the song.  Allow for the ability to link multiple mp3s to the same song in the pdf--to account for possibly different vocals or instruments.  Allow for editing, meaning give the user to add another pdf to the existing pdf, or to move which pages map to the mp3s.  Allow for drag-and-drop that allows the user to drag an mp3 onto a song, with the page the mp3 is dropped on representing the first page of the song mapping to that mp3.  Be sure to add drag-and-drop functionality for pdf files as well.  Also, give the ability to the user to mark on the pdf specific time-points that match to the mp3.
+
+The user will need a feature to save or load this configuration. The configuration file should have two options for saving, one that includes the pdf and all mp3s, so that it can be easily transferred, and one that just uses URLs to point to pdfs and mp3s for small save-file size.
+
+Include a feature to transfer the file of a pdf/mp3 setup to another computer running this application on the same local network, including a "blast" option to send to all computers running this application.  The application should be able to listen for that send, and prompt the user to accept or reject the sending of this.  There should also be the option to request a setup file.
+
+Once the mp3s are properly linked on the pdf, then have a playback feature whereby the first page of a selected song is displayed along with the play button for the matching mp3.  If the display screen is in landscape, then the first two pages of the song in the pdf are displayed, and if the display screen is in portrait, the only the first page is displayed, filling the screen.  When the user hits play, the pages will automatically turn (if necessary) to match the mp3, but only the song playing will ever display.  While the song is playing, the play button will become the pause button.  Additional controls will include the ability to go to the next song or to the previous song.  Using the timing marks on the PDF the user had added, highlight the segment on the PDF that is currently playing on the matching mp3.
+
+In addition, the user should be able to replay the mp3 at any point.  If possible, map touch-points on the pdf to specific time-points on the mp3.
+
+Include the ability to set up connections between other devices running this application on the same local area network that allows for synchronized start of an mp3 by a single user, so that all users can follow along on the PDF being highlighted, synchronized.
+
+On an "About" page, include my name (Russ Judge) as the author.  If you wish, you may include information that this was built with your assistance.
+
+Include scripts for packaging this application for Windows, Linux, and android.  The Linux distribution this will be tested for is Omarchy, so be sure to prepare a package for Omarchy.
+
+Include instructions for installing on Windows, Linux, and android.
+
+After an initial test, if the application looks good, or is at least close to being final, the application will be put into a git source control repository.
+
+I have a test pdf at c:\xxx, and four test mp3 files at c:\xxx.  The 4 mp3 files all map to 4 different songs in the PDF.

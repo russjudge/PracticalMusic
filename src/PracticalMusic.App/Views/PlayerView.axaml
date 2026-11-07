@@ -1,0 +1,72 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ctl="using:PracticalMusic.App.Controls"
+             xmlns:conv="using:PracticalMusic.App.Converters"
+             x:Class="PracticalMusic.App.Views.PlayerView"
+             x:Name="Root">
+  <Grid RowDefinitions="Auto,*,Auto">
+    <!-- song bar -->
+    <Border Grid.Row="0" Classes="navbar" Padding="8,4">
+      <Grid ColumnDefinitions="Auto,*,Auto,Auto">
+        <Button Grid.Column="0" Content="⏮ Prev song" Command="{Binding PrevSongCommand}" IsEnabled="{Binding CanPrevSong}" />
+        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center" VerticalAlignment="Center">
+          <TextBlock Text="{Binding SongTitle}" FontSize="18" FontWeight="SemiBold" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+          <ComboBox ItemsSource="{Binding Recordings}" SelectedItem="{Binding CurrentRecording, Mode=TwoWay}" IsVisible="{Binding HasMultipleRecordings}" MinWidth="140" VerticalAlignment="Center">
+            <ComboBox.ItemTemplate>
+              <DataTemplate>
+                <TextBlock Text="{Binding Name}" />
+              </DataTemplate>
+            </ComboBox.ItemTemplate>
+          </ComboBox>
+          <TextBlock Text="{Binding SyncText}" Classes="muted" VerticalAlignment="Center" IsVisible="{Binding SyncText, Converter={x:Static conv:AppConverters.IsNotEmpty}}" />
+          <TextBlock Text="{Binding StatusText}" Foreground="OrangeRed" VerticalAlignment="Center" IsVisible="{Binding StatusText, Converter={x:Static conv:AppConverters.IsNotEmpty}}" />
+        </StackPanel>
+        <ToggleButton Grid.Column="2" Content="Markers" IsChecked="{Binding ShowMarkers, Mode=TwoWay}" Margin="0,0,6,0" ToolTip.Tip="Show the time markers on the pages" />
+        <Button Grid.Column="3" Content="Next song ⏭" Command="{Binding NextSongCommand}" IsEnabled="{Binding CanNextSong}" />
+      </Grid>
+    </Border>
+
+    <!-- pages -->
+    <Grid Grid.Row="1" x:Name="PagesArea" Background="#10808080">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="*" />
+        <ColumnDefinition Width="{Binding HasRightPage, Converter={x:Static conv:AppConverters.StarIfTrue}}" />
+      </Grid.ColumnDefinitions>
+      <ctl:PageCanvas Grid.Column="0" Tag="L" Margin="2"
+                      Page="{Binding LeftPage}"
+                      Highlight="{Binding LeftHighlight}"
+                      Markers="{Binding LeftMarkers}"
+                      ShowMarkers="{Binding ShowMarkers}"
+                      Label="{Binding LeftLabel}"
+                      TapCommand="{Binding PageTapCommand}" />
+      <ctl:PageCanvas Grid.Column="1" Tag="R" Margin="2"
+                      IsVisible="{Binding HasRightPage}"
+                      Page="{Binding RightPage}"
+                      Highlight="{Binding RightHighlight}"
+                      Markers="{Binding RightMarkers}"
+                      ShowMarkers="{Binding ShowMarkers}"
+                      Label="{Binding RightLabel}"
+                      TapCommand="{Binding PageTapCommand}" />
+    </Grid>
+
+    <!-- transport -->
+    <Border Grid.Row="2" Classes="navbar" Padding="8,6">
+      <Grid ColumnDefinitions="Auto,Auto,*,Auto,Auto" RowDefinitions="Auto">
+        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6">
+          <Button Content="⏹" Classes="icon" Command="{Binding StopCommand}" ToolTip.Tip="Stop and rewind" />
+          <Button Content="{Binding PlayPauseGlyph}" Classes="big accent" Command="{Binding PlayPauseCommand}" IsEnabled="{Binding HasRecording}" ToolTip.Tip="Play / pause (Space)" />
+          <Button Content="−5s" Command="{Binding NudgeCommand}" CommandParameter="-5000" />
+          <Button Content="+5s" Command="{Binding NudgeCommand}" CommandParameter="5000" />
+        </StackPanel>
+        <TextBlock Grid.Column="1" Text="{Binding PositionText}" Classes="label" Margin="12,0,6,0" FontFamily="Consolas, monospace" />
+        <Slider Grid.Column="2" x:Name="SeekSlider" Minimum="0" Maximum="{Binding DurationMs}" Value="{Binding SliderPosition, Mode=TwoWay}" IsEnabled="{Binding HasRecording}" />
+        <TextBlock Grid.Column="3" Text="{Binding DurationText}" Classes="label" Margin="6,0,12,0" FontFamily="Consolas, monospace" />
+        <StackPanel Grid.Column="4" Orientation="Horizontal" Spacing="6">
+          <Button Content="◀" Classes="icon" Command="{Binding TurnPageCommand}" CommandParameter="prev" ToolTip.Tip="Previous page" />
+          <TextBlock Text="{Binding PageText}" Classes="label" MinWidth="110" TextAlignment="Center" />
+          <Button Content="▶" Classes="icon" Command="{Binding TurnPageCommand}" CommandParameter="next" ToolTip.Tip="Next page" />
+        </StackPanel>
+      </Grid>
+    </Border>
+  </Grid>
+</UserControl>

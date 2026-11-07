@@ -1,0 +1,42 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>PracticalMusic.Desktop</RootNamespace>
+    <AssemblyName>PracticalMusic</AssemblyName>
+    <ApplicationIcon>..\PracticalMusic.App\Assets\app-icon.ico</ApplicationIcon>
+    <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <RuntimeIdentifiers>win-x64;linux-x64;linux-arm64</RuntimeIdentifiers>
+    <!-- libvlc (Windows only): ship the 64-bit build only -->
+    <VlcWindowsX86Enabled>false</VlcWindowsX86Enabled>
+    <VlcWindowsArm64Enabled>false</VlcWindowsArm64Enabled>
+    <AssemblyTitle>Practical Music</AssemblyTitle>
+    <Title>Practical Music</Title>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <AssemblyVersion>1.0.1</AssemblyVersion>
+    <FileVersion>1.0.1</FileVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="..\..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Avalonia.Desktop" Version="$(AvaloniaVersion)" />
+    <PackageReference Include="LibVLCSharp" Version="3.10.2" />
+    <PackageReference Include="bblanchon.PDFium.Win32" Version="$(PdfiumVersion)" />
+    <PackageReference Include="bblanchon.PDFium.Linux" Version="$(PdfiumVersion)" />
+  </ItemGroup>
+  <!-- libvlc binaries are only bundled for Windows; Linux uses the distro's vlc package. -->
+  <ItemGroup Condition="'$(RuntimeIdentifier)' == '' Or $(RuntimeIdentifier.StartsWith('win'))">
+    <PackageReference Include="VideoLAN.LibVLC.Windows" Version="3.0.24" />
+    <!-- The app only plays local audio files: ship the core, the audio pipeline and the audio codecs/demuxers.
+         Wildcards are escaped (%2A = *) because the VideoLAN targets expand them relative to the package. -->
+    <VlcWindowsX64IncludeFiles Include="libvlc.%2A;libvlccore.%2A;hrtfs\%2A%2A;plugins\access\libfilesystem_plugin.dll;plugins\audio_filter\%2A%2A;plugins\audio_mixer\%2A%2A;plugins\audio_output\%2A%2A;plugins\demux\%2A%2A;plugins\packetizer\%2A%2A;plugins\stream_filter\%2A%2A;plugins\meta_engine\%2A%2A;plugins\misc\%2A%2A;plugins\codec\libavcodec_plugin.dll;plugins\codec\libmpg123%2A;plugins\codec\libmpgatofixed32%2A;plugins\codec\libflac%2A;plugins\codec\libvorbis%2A;plugins\codec\libopus%2A;plugins\codec\libspeex%2A;plugins\codec\libfaad%2A;plugins\codec\liba52%2A;plugins\codec\libdca%2A;plugins\codec\libaraw%2A;plugins\codec\liblpcm%2A;plugins\codec\libadpcm%2A;plugins\codec\libg711%2A;plugins\codec\libdmo%2A;plugins\codec\libddummy%2A" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\PracticalMusic.App\PracticalMusic.App.csproj" />
+  </ItemGroup>
+</Project>

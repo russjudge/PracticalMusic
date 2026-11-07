@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=Practical Music
+Comment=Sheet music that follows the recording: PDF pages linked to MP3s with highlighting and synced playback
+Exec=/opt/practical-music/practical-music %f
+Icon=practical-music
+Terminal=false
+Categories=AudioVideo;Audio;Music;Education;
+MimeType=application/x-practical-music-book;
+Keywords=sheet;music;pdf;mp3;score;
+StartupWMClass=PracticalMusic

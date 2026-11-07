@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0-android</TargetFramework>
+    <SupportedOSPlatformVersion>24</SupportedOSPlatformVersion>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>PracticalMusic.Android</RootNamespace>
+    <ApplicationId>com.russjudge.practicalmusic</ApplicationId>
+    <ApplicationVersion>1</ApplicationVersion>
+    <ApplicationDisplayVersion>1.0.0</ApplicationDisplayVersion>
+    <AndroidPackageFormat>apk</AndroidPackageFormat>
+    <AndroidEnableProfiledAot>false</AndroidEnableProfiledAot>
+    <RuntimeIdentifiers>android-arm64;android-x64</RuntimeIdentifiers>
+    <AndroidUseAapt2>true</AndroidUseAapt2>
+    <AndroidCreatePackagePerAbi>false</AndroidCreatePackagePerAbi>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Avalonia.Android" Version="$(AvaloniaVersion)" />
+    <PackageReference Include="bblanchon.PDFium.Android" Version="$(PdfiumVersion)" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\PracticalMusic.App\PracticalMusic.App.csproj" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,130 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ctl="using:PracticalMusic.App.Controls"
+             xmlns:conv="using:PracticalMusic.App.Converters"
+             x:Class="PracticalMusic.App.Views.TimingEditorView"
+             x:Name="Root">
+  <Grid RowDefinitions="Auto,*">
+    <!-- header -->
+    <Border Grid.Row="0" Classes="navbar" Padding="8,6">
+      <Grid ColumnDefinitions="Auto,*,Auto">
+        <Button Grid.Column="0" Content="← Done" Command="{Binding BackCommand}" ToolTip.Tip="Back to the Library (changes are kept)" />
+        <StackPanel Grid.Column="1" Margin="12,0" VerticalAlignment="Center">
+          <TextBlock FontWeight="SemiBold" TextTrimming="CharacterEllipsis">
+            <Run Text="Edit timing: " /><Run Text="{Binding SongTitle}" /><Run Text=" — " /><Run Text="{Binding RecordingName}" />
+          </TextBlock>
+          <TextBlock Text="{Binding StatusText}" Classes="muted" FontSize="12" TextWrapping="Wrap" />
+        </StackPanel>
+        <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="12">
+          <ToggleSwitch IsChecked="{Binding TapAddsMarker, Mode=TwoWay}" OnContent="Tap adds marker" OffContent="Tap seeks" />
+          <ToggleSwitch IsChecked="{Binding FollowPlayback, Mode=TwoWay}" OnContent="Pages follow audio" OffContent="Pages manual" />
+        </StackPanel>
+      </Grid>
+    </Border>
+
+    <Grid Grid.Row="1" ColumnDefinitions="*,4,340">
+      <!-- pages + transport -->
+      <Grid Grid.Column="0" RowDefinitions="*,Auto,Auto">
+        <Grid Grid.Row="0" x:Name="PagesArea" Margin="8" Background="#10808080">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="{Binding HasRightPage, Converter={x:Static conv:AppConverters.StarIfTrue}}" />
+          </Grid.ColumnDefinitions>
+          <ctl:PageCanvas Grid.Column="0" Tag="L" Margin="2"
+                          Page="{Binding LeftPage}"
+                          Markers="{Binding LeftMarkers}"
+                          ShowMarkers="True"
+                          AllowMarkerDrag="True"
+                          Highlight="{Binding LeftHighlight}"
+                          SelectedMarkerId="{Binding SelectedMarkerId}"
+                          Label="{Binding LeftLabel}"
+                          TapCommand="{Binding PageTapCommand}"
+                          MarkerMovedCommand="{Binding MarkerMovedCommand}" />
+          <ctl:PageCanvas Grid.Column="1" Tag="R" Margin="2"
+                          IsVisible="{Binding HasRightPage}"
+                          Page="{Binding RightPage}"
+                          Markers="{Binding RightMarkers}"
+                          ShowMarkers="True"
+                          AllowMarkerDrag="True"
+                          Highlight="{Binding RightHighlight}"
+                          SelectedMarkerId="{Binding SelectedMarkerId}"
+                          Label="{Binding RightLabel}"
+                          TapCommand="{Binding PageTapCommand}"
+                          MarkerMovedCommand="{Binding MarkerMovedCommand}" />
+        </Grid>
+        <!-- seek bar -->
+        <Grid Grid.Row="1" ColumnDefinitions="Auto,*,Auto" Margin="12,0">
+          <TextBlock Grid.Column="0" Text="{Binding PositionText}" Classes="label" FontFamily="Consolas, monospace" />
+          <Slider Grid.Column="1" x:Name="SeekSlider" Minimum="0" Maximum="{Binding DurationMs}" Value="{Binding SliderPosition, Mode=TwoWay}" />
+          <TextBlock Grid.Column="2" Text="{Binding DurationText}" Classes="label" Margin="8,0,0,0" FontFamily="Consolas, monospace" />
+        </Grid>
+        <!-- transport -->
+        <WrapPanel Grid.Row="2" ItemSpacing="6" LineSpacing="6" Margin="8,0,8,8" HorizontalAlignment="Center">
+          <Button Content="⏹" Classes="icon" Command="{Binding StopCommand}" ToolTip.Tip="Stop and rewind" />
+          <Button Content="{Binding PlayPauseGlyph}" Classes="big accent" Command="{Binding PlayPauseCommand}" ToolTip.Tip="Play / pause (Space)" />
+          <Button Content="−5s" Command="{Binding NudgeCommand}" CommandParameter="-5000" />
+          <Button Content="−1s" Command="{Binding NudgeCommand}" CommandParameter="-1000" />
+          <Button Content="+1s" Command="{Binding NudgeCommand}" CommandParameter="1000" />
+          <Button Content="+5s" Command="{Binding NudgeCommand}" CommandParameter="5000" />
+          <Border Width="1" Background="Gray" Opacity="0.4" Margin="4,0" />
+          <Button Content="◀ Page" Command="{Binding PrevPageCommand}" IsEnabled="{Binding CanGoPrevPage}" />
+          <TextBlock Text="{Binding PageText}" Classes="label" />
+          <Button Content="Page ▶" Command="{Binding NextPageCommand}" IsEnabled="{Binding CanGoNextPage}" />
+        </WrapPanel>
+      </Grid>
+
+      <GridSplitter Grid.Column="1" Background="Transparent" />
+
+      <!-- side panel -->
+      <ScrollViewer Grid.Column="2" Padding="8">
+        <StackPanel Spacing="8">
+          <TextBlock Text="{Binding IntroText}" Classes="muted" FontSize="12" TextWrapping="Wrap" />
+          <Button Content="{Binding NextPageNowText}" Classes="accent" HorizontalAlignment="Stretch" MinHeight="52" FontSize="16"
+                  Command="{Binding NextPageNowCommand}" IsEnabled="{Binding CanGoNextPage}"
+                  ToolTip.Tip="Press when the music reaches the top of the next page (key N)" />
+
+          <TextBlock Classes="h2" Text="Page start times" />
+          <ItemsControl ItemsSource="{Binding PageTimings}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto" Margin="0,2">
+                  <TextBlock Grid.Column="0" Text="{Binding PageNumber, StringFormat='Page {0}'}" Classes="label" FontWeight="{Binding IsCurrent, Converter={x:Static conv:AppConverters.BoldIfTrue}}" Width="60" />
+                  <TextBlock Grid.Column="1" Text="{Binding TimeText}" Classes="label" FontFamily="Consolas, monospace" />
+                  <Button Grid.Column="2" Content="Go" Classes="icon" FontSize="12" Command="{Binding #Root.DataContext.GoToPageCommand}" CommandParameter="{Binding}" ToolTip.Tip="Show this page / seek to its start" />
+                  <Button Grid.Column="3" Content="Now" Classes="icon" FontSize="12" Command="{Binding #Root.DataContext.SetPageStartNowCommand}" CommandParameter="{Binding}" ToolTip.Tip="Set start to the current time" IsVisible="{Binding PageOffset, Converter={x:Static conv:AppConverters.IsNonZero}}" />
+                  <Button Grid.Column="4" Content="✕" Classes="icon" FontSize="12" Command="{Binding #Root.DataContext.ClearPageStartCommand}" CommandParameter="{Binding}" ToolTip.Tip="Clear" IsVisible="{Binding HasTiming}" />
+                </Grid>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+
+          <Grid ColumnDefinitions="*,Auto">
+            <TextBlock Grid.Column="0" Classes="h2" Text="{Binding MarkerCountText}" />
+            <Button Grid.Column="1" Content="Clear all" FontSize="12" Command="{Binding ClearMarkersCommand}" VerticalAlignment="Bottom" />
+          </Grid>
+          <TextBlock Classes="muted" FontSize="12" TextWrapping="Wrap"
+                     Text="Markers link a spot on the page to a time. The highlight runs from a marker to the next marker on the same line (or to the end of the line). Drag a marker to move it." />
+          <ListBox ItemsSource="{Binding Markers}" SelectedItem="{Binding SelectedMarker, Mode=TwoWay}" MaxHeight="360">
+            <ListBox.ItemTemplate>
+              <DataTemplate>
+                <Grid ColumnDefinitions="*,Auto,Auto,Auto,Auto">
+                  <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8">
+                    <TextBlock Text="{Binding TimeText}" FontFamily="Consolas, monospace" FontWeight="{Binding IsCurrent, Converter={x:Static conv:AppConverters.BoldIfTrue}}" />
+                    <TextBlock Text="{Binding PageText}" Classes="muted" />
+                    <TextBlock Text="{Binding PositionText}" Classes="muted" FontSize="11" />
+                  </StackPanel>
+                  <Button Grid.Column="1" Content="Go" Classes="icon" FontSize="12" Command="{Binding #Root.DataContext.GoToMarkerCommand}" CommandParameter="{Binding}" />
+                  <Button Grid.Column="2" Content="Now" Classes="icon" FontSize="12" Command="{Binding #Root.DataContext.SetMarkerTimeNowCommand}" CommandParameter="{Binding}" ToolTip.Tip="Set marker time to the current time" />
+                  <Button Grid.Column="3" Content="✕" Classes="icon" FontSize="12" Command="{Binding #Root.DataContext.DeleteMarkerCommand}" CommandParameter="{Binding}" />
+                </Grid>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+
+          <TextBlock Classes="h2" Text="Highlight height" />
+          <Slider Minimum="0.02" Maximum="0.3" Value="{Binding HighlightHeight, Mode=TwoWay}" TickFrequency="0.01" />
+        </StackPanel>
+      </ScrollViewer>
+    </Grid>
+  </Grid>
+</UserControl>

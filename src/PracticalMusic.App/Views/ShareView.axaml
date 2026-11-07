@@ -1,0 +1,75 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="PracticalMusic.App.Views.ShareView"
+             x:Name="Root">
+  <ScrollViewer>
+    <StackPanel Margin="16" Spacing="10" MaxWidth="900" HorizontalAlignment="Left">
+      <TextBlock Classes="h1" Text="Share on the local network" />
+
+      <Border Classes="card">
+        <StackPanel Spacing="8">
+          <WrapPanel ItemSpacing="8" LineSpacing="8">
+            <TextBlock Text="This device is called:" Classes="label" />
+            <TextBox Text="{Binding DeviceName, Mode=TwoWay}" MinWidth="200" />
+            <Button Content="Apply" Command="{Binding ApplyDeviceNameCommand}" />
+            <ToggleSwitch IsChecked="{Binding NetworkEnabled, Mode=TwoWay}" OnContent="Network sharing on" OffContent="Network sharing off" Margin="16,0,0,0" />
+          </WrapPanel>
+          <TextBlock Text="{Binding LocalInfo}" Classes="muted" FontSize="12" TextWrapping="Wrap" />
+          <TextBlock Text="{Binding FirewallHint}" Classes="muted" FontSize="12" TextWrapping="Wrap" IsVisible="{Binding NetworkEnabled}" />
+          <TextBlock Text="{Binding BookTitle, StringFormat='Current book: {0}'}" />
+        </StackPanel>
+      </Border>
+
+      <Grid ColumnDefinitions="*,Auto,Auto">
+        <TextBlock Grid.Column="0" Classes="h2" Text="Devices running Practical Music" VerticalAlignment="Bottom" />
+        <Button Grid.Column="1" Content="↻ Refresh" Command="{Binding RefreshCommand}" Margin="0,0,6,0" />
+        <Button Grid.Column="2" Content="📣 Blast book to all" Classes="accent" Command="{Binding BlastCommand}" IsEnabled="{Binding HasPeers}" ToolTip.Tip="Offer the current book (with media) to every device; each user accepts or rejects" />
+      </Grid>
+      <TextBlock Text="No other devices found yet. Start Practical Music on another computer, tablet or phone on the same Wi-Fi / LAN and it will appear here within a few seconds."
+                 Classes="muted" TextWrapping="Wrap" IsVisible="{Binding NoPeers}" />
+      <ItemsControl ItemsSource="{Binding Peers}">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate>
+            <Border Classes="card">
+              <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto">
+                <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal" Spacing="8">
+                  <TextBlock Text="{Binding Name}" FontSize="16" FontWeight="SemiBold" />
+                  <Border Background="{DynamicResource SystemAccentColor}" CornerRadius="4" Padding="6,1" IsVisible="{Binding Leading}">
+                    <TextBlock Text="LEADING SYNC" Foreground="White" FontSize="11" />
+                  </Border>
+                </StackPanel>
+                <TextBlock Grid.Row="1" Grid.Column="0" Text="{Binding Details}" Classes="muted" FontSize="12" TextWrapping="Wrap" />
+                <TextBlock Grid.Row="2" Grid.Column="0" Text="{Binding Activity}" FontSize="12" Foreground="{DynamicResource SystemAccentColor}" />
+                <WrapPanel Grid.Row="0" Grid.RowSpan="3" Grid.Column="1" ItemSpacing="6" LineSpacing="6" VerticalAlignment="Center">
+                  <Button Content="📤 Send book" Command="{Binding #Root.DataContext.SendToCommand}" CommandParameter="{Binding}" IsEnabled="{Binding !IsBusy}" ToolTip.Tip="Offer the current book (with media) to this device" />
+                  <Button Content="📥 Request book" Command="{Binding #Root.DataContext.RequestFromCommand}" CommandParameter="{Binding}" IsEnabled="{Binding !IsBusy}" ToolTip.Tip="Ask this device to send its current book" />
+                  <Button Content="🔗 Follow" Command="{Binding #Root.DataContext.FollowCommand}" CommandParameter="{Binding}" IsVisible="{Binding Leading}" ToolTip.Tip="Synchronize playback with this device" />
+                </WrapPanel>
+              </Grid>
+            </Border>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+
+      <TextBlock Classes="h2" Text="Synchronized playback" />
+      <Border Classes="card">
+        <StackPanel Spacing="8">
+          <TextBlock Text="{Binding SyncStatus}" TextWrapping="Wrap" />
+          <TextBlock Classes="muted" FontSize="12" TextWrapping="Wrap"
+                     Text="One device leads: when the leader presses play, every follower starts the same song at the same moment and the highlight moves together. Followers need the same book (send it first)." />
+          <WrapPanel ItemSpacing="6" LineSpacing="6">
+            <Button Content="🎼 Lead a session" Classes="accent" Command="{Binding LeadCommand}" IsVisible="{Binding !IsLeading}" />
+            <Button Content="Stop" Command="{Binding StopSyncCommand}" IsVisible="{Binding IsLeading}" />
+            <Button Content="Stop following" Command="{Binding StopSyncCommand}" IsVisible="{Binding IsFollowing}" />
+          </WrapPanel>
+        </StackPanel>
+      </Border>
+
+      <Grid ColumnDefinitions="*,Auto">
+        <TextBlock Grid.Column="0" Classes="h2" Text="Activity" VerticalAlignment="Bottom" />
+        <Button Grid.Column="1" Content="Clear" Command="{Binding ClearLogCommand}" />
+      </Grid>
+      <ListBox ItemsSource="{Binding Log}" Height="180" FontSize="12" FontFamily="Consolas, monospace" />
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>
