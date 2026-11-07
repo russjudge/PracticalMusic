@@ -1,3 +1,4 @@
+using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -134,6 +135,52 @@ public sealed partial class MainViewModel : ViewModelBase
             return ok;
         }
         return true;
+    }
+
+    /// <summary>
+    /// A book arrived over the network and has been written to the app's received folder (so nothing is
+    /// lost). Asks the user where to keep it: a chosen location becomes the book's path (later saves go
+    /// there silently); cancelling keeps the received copy and opens it from there.
+    /// </summary>
+    public async Task ReceivedBookAsync(string receivedPath, string title, string senderName)
+    {
+        var baseName = string.IsNullOrWhiteSpace(title) ? Path.GetFileNameWithoutExtension(receivedPath) : title;
+        var suggested = BookPackage.Sanitize(baseName) + BookPackage.Extension;
+        var picked = await FileImporter.PickSaveAsync($"Book received from {senderName} – choose where to save it", suggested, FileImporter.BookType);
+        var path = receivedPath;
+        if (picked != null)
+        {
+            var local = picked.TryGetLocalPath();
+            try
+            {
+                if (!string.IsNullOrEmpty(local))
+                {
+                    BookPackage.MoveFile(receivedPath, local);
+                    AppServices.Settings.RememberSaveFolder(local);
+                    path = local;
+                }
+                else
+                {
+                    // content:// target (Android): put a copy there; the received file stays the working copy
+                    await using var output = await picked.OpenWriteAsync();
+                    await using var input = File.OpenRead(receivedPath);
+                    await input.CopyToAsync(output);
+                }
+            }
+            catch (Exception ex)
+            {
+                await Dialogs.MessageAsync("Could not save there", ex.Message + $"\n\nThe received copy is kept at\n{receivedPath}");
+                path = receivedPath;
+            }
+        }
+        else
+        {
+            var open = await Dialogs.ConfirmAsync("Book received",
+                $"\"{title}\" from {senderName} is kept in the app's folder:\n{receivedPath}\n\nOpen it now? (Save as… lets you move it to another folder later.)", "Open", "Later");
+            if (!open) return;
+        }
+        await OpenReceivedBookAsync(path);
+        if (string.Equals(Session.BookPath, path, StringComparison.OrdinalIgnoreCase)) SetStatus($"Opened {path}");
     }
 
     public async Task OpenReceivedBookAsync(string path)

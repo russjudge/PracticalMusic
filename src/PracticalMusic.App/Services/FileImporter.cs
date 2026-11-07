@@ -47,6 +47,10 @@ public static class FileImporter
         });
     }
 
+    /// <summary>
+    /// Shows the save dialog. It opens in the folder the user last saved a book to (<see cref="AppSettings.LastSaveFolder"/>),
+    /// or in the user's Documents folder the first time.
+    /// </summary>
     public static async Task<IStorageFile?> PickSaveAsync(string title, string suggestedName, FilePickerFileType type)
     {
         var storage = AppServices.Storage;
@@ -55,10 +59,37 @@ public static class FileImporter
         {
             Title = title,
             SuggestedFileName = suggestedName,
+            SuggestedStartLocation = await SaveStartFolderAsync(storage),
             DefaultExtension = type.Patterns?.FirstOrDefault()?.TrimStart('*'),
             FileTypeChoices = new[] { type },
             ShowOverwritePrompt = true
         });
+    }
+
+    private static async Task<IStorageFolder?> SaveStartFolderAsync(IStorageProvider storage)
+    {
+        try
+        {
+            var last = AppServices.Settings.LastSaveFolder;
+            if (!string.IsNullOrEmpty(last) && Directory.Exists(last))
+            {
+                var folder = await storage.TryGetFolderFromPathAsync(last);
+                if (folder != null) return folder;
+            }
+            // the user's Documents folder; the plain path is more reliable than the well-known-folder lookup
+            // (on Windows the latter did not steer the dialog), which stays as the fallback for other platforms
+            var documents = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            if (!string.IsNullOrEmpty(documents) && Directory.Exists(documents))
+            {
+                var folder = await storage.TryGetFolderFromPathAsync(documents);
+                if (folder != null) return folder;
+            }
+            return await storage.TryGetWellKnownFolderAsync(WellKnownFolder.Documents);
+        }
+        catch
+        {
+            return null; // the dialog then opens wherever the platform decides
+        }
     }
 
     /// <summary>

@@ -49,6 +49,7 @@ Outputs go to `dist\`.
 
 ## Where files live
 
-- Settings, imported library and received books: `%APPDATA%\PracticalMusic`
+- Settings, imported library and received books that you did not save elsewhere: `%APPDATA%\PracticalMusic`
+  (a received book asks where to save it; the *Recent ▾* menu in the Library lists the books you saved or opened)
 - Cache (extracted media of opened books, downloads): `%LOCALAPPDATA%\PracticalMusic\cache` (safe to delete)
 - A crash, if one ever happens, is logged to `%APPDATA%\PracticalMusic\crash.log`

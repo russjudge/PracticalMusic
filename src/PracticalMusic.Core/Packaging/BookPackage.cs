@@ -104,6 +104,25 @@ public static class BookPackage
         progress?.Report(("done", 1));
     }
 
+    /// <summary>
+    /// Moves a finished file to its final place (falling back to a copy when a move is not possible) and
+    /// verifies that the target exists with the same size. Throws an <see cref="IOException"/> that explains
+    /// protected folders when the write was silently blocked (Windows "Controlled folder access").
+    /// </summary>
+    public static void MoveFile(string source, string target)
+    {
+        source = Path.GetFullPath(source);
+        target = Path.GetFullPath(target);
+        if (string.Equals(source, target, StringComparison.OrdinalIgnoreCase)) return;
+        var expected = new FileInfo(source).Length;
+        var folder = Path.GetDirectoryName(target);
+        if (!string.IsNullOrEmpty(folder)) Directory.CreateDirectory(folder);
+        MoveIntoPlace(source, target);
+        var written = File.Exists(target) ? new FileInfo(target).Length : -1;
+        if (written != expected) throw new IOException(ProtectedFolderMessage(target));
+        if (File.Exists(source)) { try { File.Delete(source); } catch { /* the copy fallback left it behind; not important */ } }
+    }
+
     private static void MoveIntoPlace(string temp, string path)
     {
         Exception? last = null;

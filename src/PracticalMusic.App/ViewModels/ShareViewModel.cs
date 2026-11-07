@@ -263,9 +263,7 @@ public sealed partial class ShareViewModel : ViewModelBase, IActivatable
         AddLog($"Received \"{offer.Title}\" from {offer.SenderName}: {path}");
         var peer = Peers.FirstOrDefault(p => p.Id == offer.SenderId);
         if (peer != null) peer.Activity = "Received ✓";
-        var open = await AppServices.Dialogs.ConfirmAsync("Book received",
-            $"\"{offer.Title}\" from {offer.SenderName} was saved to\n{path}\n\nOpen it now?", "Open", "Later");
-        if (open && AppServices.Main != null) await AppServices.Main.OpenReceivedBookAsync(path);
+        if (AppServices.Main != null) await AppServices.Main.ReceivedBookAsync(path, offer.Title, offer.SenderName);
     });
 
     // ---------------------------------------------------------------- sync

@@ -137,6 +137,21 @@ public sealed partial class SongItemViewModel : ViewModelBase
 /// Book editor, organised as a guided flow: 1 add the PDF, 2 identify the songs (which pages belong to
 /// which song), 3 add recordings to each song, 4 set the timing. Playing needs steps 1–3.
 /// </summary>
+/// <summary>One entry of the Recent ▾ menu.</summary>
+public sealed class RecentBookItem
+{
+    public RecentBookItem(string path, IRelayCommand<string?> open)
+    {
+        Path = path;
+        Name = System.IO.Path.GetFileName(path);
+        OpenCommand = new RelayCommand(() => open.Execute(path));
+    }
+
+    public string Path { get; }
+    public string Name { get; }
+    public IRelayCommand OpenCommand { get; }
+}
+
 public sealed partial class LibraryViewModel : ViewModelBase, IActivatable
 {
     private CancellationTokenSource? _thumbCts;
@@ -446,11 +461,50 @@ public sealed partial class LibraryViewModel : ViewModelBase, IActivatable
         AppServices.Pages.ClearCache();
         Session.Replace(book, path);
         AppServices.Settings.AddRecent(path);
+        RefreshRecent();
         _ = AppServices.Lan.AnnounceAsync();
         var missing = book.AllMediaSources().Count(s => !s.IsResolved && s.Kind != MediaSourceKind.Url);
         AppServices.Main?.SetStatus(missing > 0
             ? $"Opened {book.Title}. {missing} media file(s) could not be found."
             : $"Opened {book.Title}.");
+    }
+
+    // ---------------------------------------------------------------- recent books
+
+    public ObservableCollection<RecentBookItem> RecentBooks { get; } = new();
+    public bool HasRecent => RecentBooks.Count > 0;
+
+    public void RefreshRecent()
+    {
+        RecentBooks.Clear();
+        foreach (var p in AppServices.Settings.RecentBooks) RecentBooks.Add(new RecentBookItem(p, OpenRecentCommand));
+        OnPropertyChanged(nameof(HasRecent));
+    }
+
+    [RelayCommand]
+    private async Task OpenRecentAsync(string? path)
+    {
+        if (string.IsNullOrEmpty(path)) return;
+        if (!File.Exists(path))
+        {
+            await AppServices.Dialogs.MessageAsync("File not found", $"{path}\n\nThe book was moved or deleted. It is removed from the recent list.");
+            AppServices.Settings.RemoveRecent(path);
+            RefreshRecent();
+            return;
+        }
+        if (string.Equals(path, Session.BookPath, StringComparison.OrdinalIgnoreCase) && !Session.IsDirty) return;
+        if (!await AppServices.Main!.ConfirmDiscardChangesAsync()) return;
+        try
+        {
+            IsBusy = true;
+            BusyText = "Opening book…";
+            await LoadBookFromPathAsync(path);
+        }
+        catch (Exception ex)
+        {
+            await AppServices.Dialogs.MessageAsync("Could not open book", ex.Message);
+        }
+        finally { IsBusy = false; }
     }
 
     [RelayCommand]
@@ -479,10 +533,11 @@ public sealed partial class LibraryViewModel : ViewModelBase, IActivatable
         IStorageFile? pickedFile = null;
         if (targetPath == null)
         {
-            var suggested = BookPackage.Sanitize(book.Title) + (embedMedia ? "" : "-links") + BookPackage.Extension;
+            var suggested = BookPackage.Sanitize(book.Title) + BookPackage.Extension;
             pickedFile = await FileImporter.PickSaveAsync(embedMedia ? "Save book with media" : "Save book (links only)", suggested, FileImporter.BookType);
             if (pickedFile == null) return false;
             targetPath = pickedFile.TryGetLocalPath();
+            if (!string.IsNullOrEmpty(targetPath)) AppServices.Settings.RememberSaveFolder(targetPath);
         }
 
         if (embedMedia)
@@ -523,7 +578,7 @@ public sealed partial class LibraryViewModel : ViewModelBase, IActivatable
             }
             LastSaveEmbedded = embedMedia;
             Session.MarkSaved(targetPath);
-            if (File.Exists(targetPath)) AppServices.Settings.AddRecent(targetPath);
+            if (File.Exists(targetPath)) { AppServices.Settings.AddRecent(targetPath); RefreshRecent(); }
             AppServices.Main?.SetStatus($"Saved {Path.GetFileName(targetPath)}" + (embedMedia ? " (media embedded)" : " (links only)"));
             return true;
         }

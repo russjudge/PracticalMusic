@@ -104,6 +104,7 @@ Bash); only the Arch package has to be built on Arch because it uses `makepkg`.
 
 ## Where files live
 
-- Settings, imported library, received books: `~/.config/PracticalMusic`
+- Settings, imported library, received books that you did not save elsewhere: `~/.config/PracticalMusic`
+  (a received book asks where to save it; the *Recent ▾* menu in the Library lists the books you saved or opened)
 - Cache: `~/.local/share/PracticalMusic/cache` (safe to delete)
 - Crash log: `~/.config/PracticalMusic/crash.log`

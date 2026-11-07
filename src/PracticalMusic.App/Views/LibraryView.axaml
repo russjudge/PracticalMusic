@@ -10,6 +10,19 @@
       <WrapPanel Orientation="Horizontal" ItemSpacing="6" LineSpacing="6">
         <Button Content="New" Command="{Binding NewBookCommand}" ToolTip.Tip="Start an empty book" />
         <Button Content="Open…" Command="{Binding OpenBookCommand}" ToolTip.Tip="Open a .pmbook file" />
+        <Button Content="Recent ▾" IsEnabled="{Binding HasRecent}" ToolTip.Tip="Books you opened or saved recently">
+          <Button.Flyout>
+            <MenuFlyout ItemsSource="{Binding RecentBooks}">
+              <MenuFlyout.ItemContainerTheme>
+                <ControlTheme TargetType="MenuItem" BasedOn="{StaticResource {x:Type MenuItem}}">
+                  <Setter Property="Header" Value="{Binding Name}" />
+                  <Setter Property="Command" Value="{Binding OpenCommand}" />
+                  <Setter Property="ToolTip.Tip" Value="{Binding Path}" />
+                </ControlTheme>
+              </MenuFlyout.ItemContainerTheme>
+            </MenuFlyout>
+          </Button.Flyout>
+        </Button>
         <Button Content="💾 Save (with media)" Command="{Binding SaveEmbeddedCommand}" ToolTip.Tip="Self-contained .pmbook: PDF and audio are embedded, easy to transfer" />
         <Button Content="🔗 Save (links only)" Command="{Binding SaveLinksCommand}" ToolTip.Tip="Small .pmbook that only points at the PDF and audio files" />
         <Button Content="Save as ▾">

@@ -89,9 +89,12 @@ The Library guides you through four steps; the step chips at the top of the Libr
    folder that is not protected (for example Downloads); the app tells you when a save was blocked.
 7. **Share** – other devices running Practical Music on the same network appear automatically. *Send book*
    / *Blast book to all* offers the current book (with media); the receiving user accepts or rejects.
-   *Request book* asks a device to send its book. *Lead a session* makes this device the sync leader; on
-   other devices press *Follow* next to the leader. When the leader presses play, all followers start the
-   same song at the same instant, and pause/seek/song changes are mirrored.
+   *Request book* asks a device to send its book. A received book first lands safely in the app's
+   `received` folder, then a save dialog asks where you want to keep it (it opens in the folder you last
+   saved to, or Documents); that location becomes the book's file, so later saves go there without asking.
+   Cancel the dialog and the book stays in the `received` folder. *Lead a session* makes this device the
+   sync leader; on other devices press *Follow* next to the leader. When the leader presses play, all
+   followers start the same song at the same instant, and pause/seek/song changes are mirrored.
 
 ## File format
 
@@ -101,7 +104,7 @@ or URLs in `book.json`; if a referenced file is missing, the app also looks next
 
 ## Data locations
 
-- Windows: `%APPDATA%\PracticalMusic` (settings, imported library, received books), cache in `%LOCALAPPDATA%\PracticalMusic\cache`
+- Windows: `%APPDATA%\PracticalMusic` (settings, imported library, received books you did not save elsewhere), cache in `%LOCALAPPDATA%\PracticalMusic\cache`
 - Linux: `~/.config/PracticalMusic`, cache in `~/.local/share/PracticalMusic/cache`
 - Android: `Android/data/com.russjudge.practicalmusic/files` (received books are in `received/`)
 
