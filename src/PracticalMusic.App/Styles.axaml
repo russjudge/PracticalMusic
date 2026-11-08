@@ -46,6 +46,10 @@
   <Style Selector="Border.navbar">
     <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundChromeMediumBrush}" />
   </Style>
+  <!-- Player pages area in full-display mode -->
+  <Style Selector="Grid.fill">
+    <Setter Property="Background" Value="Black" />
+  </Style>
   <Style Selector="ToggleButton.nav">
     <Setter Property="MinHeight" Value="40" />
     <Setter Property="Padding" Value="14,6" />

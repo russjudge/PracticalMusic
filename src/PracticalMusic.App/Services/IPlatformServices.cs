@@ -25,6 +25,9 @@ public interface IPlatformServices
     /// <summary>Keeps the display awake during playback.</summary>
     void KeepScreenOn(bool on);
 
+    /// <summary>Full-display mode for the Player: hide system bars where the platform has them (desktop window state is handled by the view).</summary>
+    void SetImmersive(bool on);
+
     /// <summary>Called when the network services start/stop (Android acquires a multicast lock).</summary>
     void NetworkActive(bool active);
 }

@@ -16,6 +16,8 @@ public sealed class AppSettings
     /// <summary>TCP port for book transfers (default 47313). When busy the next ports are tried; 0 = any free port.</summary>
     public int TransferPort { get; set; } = TransferService.DefaultPort;
     public bool TapToSeekInPlayer { get; set; } = true;
+    /// <summary>Player option: the pages fill the whole display (window full screen, bars hidden, floating controls).</summary>
+    public bool FillDisplayInPlayer { get; set; }
     public double Volume { get; set; } = 1.0;
 
     private static string? _path;

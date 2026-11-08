@@ -54,6 +54,25 @@ public sealed class AndroidPlatformServices : IPlatformServices
         });
     }
 
+    public void SetImmersive(bool on)
+    {
+        _activity.RunOnUiThread(() =>
+        {
+            try
+            {
+                var decor = _activity.Window?.DecorView;
+                if (decor == null) return;
+#pragma warning disable CA1422 // SystemUiVisibility is deprecated from API 30 but still works on every supported version
+                decor.SystemUiVisibility = on
+                    ? (StatusBarVisibility)(SystemUiFlags.ImmersiveSticky | SystemUiFlags.Fullscreen | SystemUiFlags.HideNavigation |
+                                            SystemUiFlags.LayoutStable | SystemUiFlags.LayoutFullscreen | SystemUiFlags.LayoutHideNavigation)
+                    : StatusBarVisibility.Visible;
+#pragma warning restore CA1422
+            }
+            catch { /* cosmetic */ }
+        });
+    }
+
     public void NetworkActive(bool active)
     {
         try

@@ -82,7 +82,12 @@ The Library guides you through four steps; the step chips at the top of the Libr
    them; *Now* re-stamps a marker or page at the current time.
 5. **Play** – pick a song (*Prev/Next song*, or *Play* in the Library). Landscape shows two pages, portrait
    one. Pages turn with the recording; tap a line to jump there. Keys: Space play/pause, ←/→ ±5 s,
-   PageUp/PageDown turn pages, N/P next/previous song.
+   PageUp/PageDown (or ↑/↓) turn pages, S stop, N/P next/previous song.
+   **Full display** (toggle in the song bar, or F11): the pages fill the whole screen, the window goes full
+   screen and all bars disappear. Move the mouse or tap the page to show the floating controls (play/pause,
+   stop, ±5 s, previous/next page, exit); they fade out again while the music plays and stay visible while
+   paused. Esc, the *Exit full display* button or Android's back button return to the normal view. The choice
+   is remembered.
 6. **Save** – *Save (with media)* writes a self-contained book; *Save (links only)* writes a small file that
    points at the PDF/MP3 locations (or URLs). Both use the `.pmbook` extension. On Windows, if *Controlled
    folder access* (ransomware protection) is enabled, allow Practical Music in Windows Security or save to a

@@ -35,6 +35,8 @@ public sealed class DesktopPlatformServices : IPlatformServices
 
     public void NetworkActive(bool active) { }
 
+    public void SetImmersive(bool on) { } // the main view switches the window to full screen
+
     [Flags]
     private enum ExecutionState : uint
     {

@@ -7,7 +7,7 @@
   <Panel>
     <Grid RowDefinitions="Auto,*,Auto">
       <!-- navigation bar -->
-      <Border Grid.Row="0" Classes="navbar" Padding="8,6">
+      <Border Grid.Row="0" Classes="navbar" Padding="8,6" IsVisible="{Binding !IsImmersive}">
         <Grid ColumnDefinitions="Auto,*,Auto">
           <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="2">
             <ToggleButton Classes="nav" Content="📚 Library" IsChecked="{Binding IsLibrarySelected, Mode=OneWay}" Command="{Binding ShowLibraryCommand}" />
@@ -23,7 +23,7 @@
       <ContentControl Grid.Row="1" Content="{Binding CurrentView}" />
 
       <!-- status bar -->
-      <Border Grid.Row="2" Classes="navbar" Padding="10,4">
+      <Border Grid.Row="2" Classes="navbar" Padding="10,4" IsVisible="{Binding !IsImmersive}">
         <TextBlock Text="{Binding StatusText}" FontSize="12" TextTrimming="CharacterEllipsis" />
       </Border>
     </Grid>

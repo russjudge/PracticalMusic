@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using Avalonia.Input;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -32,6 +33,7 @@ public sealed partial class PlayerViewModel : ViewModelBase, IActivatable
     private CancellationTokenSource? _scheduledStart;
     private bool _applyingRemote;
     private int _ticks;
+    private readonly DispatcherTimer _overlayTimer = new() { Interval = TimeSpan.FromSeconds(3) };
 
     public BookSession Session => AppServices.Session;
     public IAudioPlayer Audio => AppServices.Audio;
@@ -61,6 +63,9 @@ public sealed partial class PlayerViewModel : ViewModelBase, IActivatable
     [ObservableProperty] private double _viewportHeight = 1000;
     [ObservableProperty] private double _renderScale = 1;
     [ObservableProperty] private string _syncText = "";
+    /// <summary>Option: pages fill the whole display; bars are hidden and the controls float over the pages until they fade.</summary>
+    [ObservableProperty] private bool _fillDisplay;
+    [ObservableProperty] private bool _overlayVisible = true;
 
     public bool HasSong => CurrentSong != null;
     public bool HasRecording => CurrentRecording != null;
@@ -81,6 +86,12 @@ public sealed partial class PlayerViewModel : ViewModelBase, IActivatable
     public bool CanPrevSong => SongIndex > 0;
     public bool CanNextSong => SongIndex >= 0 && SongIndex < Songs.Count - 1;
     public bool HasMultipleRecordings => Recordings.Count > 1;
+    /// <summary>Song bar and transport bar are shown (normal view).</summary>
+    public bool ShowChrome => !FillDisplay;
+    /// <summary>The floating controls in full-display mode.</summary>
+    public bool ShowOverlay => FillDisplay && OverlayVisible;
+    /// <summary>Hide the mouse pointer over the pages while playing in full-display mode with the controls faded out.</summary>
+    public Cursor PagesCursor => FillDisplay && !OverlayVisible && IsPlaying ? new Cursor(StandardCursorType.None) : Cursor.Default;
 
     public double SliderPosition
     {
@@ -99,6 +110,12 @@ public sealed partial class PlayerViewModel : ViewModelBase, IActivatable
         Session.BookChanged += RebuildSongs;
         Sync.StateReceived += OnSyncState;
         Sync.Changed += () => Dispatcher.UIThread.Post(UpdateSyncText);
+        _fillDisplay = AppServices.Settings.FillDisplayInPlayer;
+        _overlayTimer.Tick += (_, _) =>
+        {
+            _overlayTimer.Stop();
+            if (IsPlaying) OverlayVisible = false; // while paused the controls stay on screen
+        };
         RebuildSongs();
     }
 
@@ -115,6 +132,11 @@ public sealed partial class PlayerViewModel : ViewModelBase, IActivatable
         _renderedSpread = -1;
         _ = RenderSpreadAsync();
         UpdateSyncText();
+        if (FillDisplay)
+        {
+            AppServices.Main?.SetImmersive(true);
+            PokeOverlay();
+        }
     }
 
     public void Deactivate()
@@ -128,7 +150,42 @@ public sealed partial class PlayerViewModel : ViewModelBase, IActivatable
         _scheduledStart?.Cancel();
         try { if (Audio.State == PlaybackState.Playing) Audio.Pause(); } catch { /* ignore */ }
         AppServices.Platform.KeepScreenOn(false);
+        _overlayTimer.Stop();
+        AppServices.Main?.SetImmersive(false);
     }
+
+    // ---------------------------------------------------------------- full-display mode
+
+    partial void OnFillDisplayChanged(bool value)
+    {
+        AppServices.Settings.FillDisplayInPlayer = value;
+        AppServices.Settings.Save();
+        OnPropertyChanged(nameof(ShowChrome));
+        OnPropertyChanged(nameof(ShowOverlay));
+        OnPropertyChanged(nameof(PagesCursor));
+        if (_active) AppServices.Main?.SetImmersive(value);
+        if (value) PokeOverlay(); else { _overlayTimer.Stop(); OverlayVisible = true; }
+    }
+
+    partial void OnOverlayVisibleChanged(bool value)
+    {
+        OnPropertyChanged(nameof(ShowOverlay));
+        OnPropertyChanged(nameof(PagesCursor));
+    }
+
+    /// <summary>Shows the floating controls; they fade again after a few seconds while the music plays.</summary>
+    public void PokeOverlay()
+    {
+        OverlayVisible = true;
+        _overlayTimer.Stop();
+        if (FillDisplay && IsPlaying) _overlayTimer.Start();
+    }
+
+    [RelayCommand]
+    private void ToggleFillDisplay() => FillDisplay = !FillDisplay;
+
+    [RelayCommand]
+    private void ExitFillDisplay() => FillDisplay = false;
 
     // ---------------------------------------------------------------- song / recording selection
 
@@ -423,7 +480,12 @@ public sealed partial class PlayerViewModel : ViewModelBase, IActivatable
 
     partial void OnCurrentPageOffsetChanged(int value) => OnPropertyChanged(nameof(PageText));
 
-    partial void OnIsPlayingChanged(bool value) => OnPropertyChanged(nameof(PlayPauseGlyph));
+    partial void OnIsPlayingChanged(bool value)
+    {
+        OnPropertyChanged(nameof(PlayPauseGlyph));
+        OnPropertyChanged(nameof(PagesCursor));
+        PokeOverlay(); // paused: controls stay; playing: they fade after a few seconds
+    }
 
     public void SetViewport(double width, double height, double scale)
     {

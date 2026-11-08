@@ -42,6 +42,8 @@ public static class AppConverters
         state == 1 ? Brushes.White : Avalonia.AvaloniaProperty.UnsetValue);
 
     public static readonly IValueConverter ItalicIfTrue = new FuncValueConverter<bool, FontStyle>(b => b ? FontStyle.Italic : FontStyle.Normal);
+    /// <summary>Page margin in the Player: none in full-display mode, a hairline otherwise.</summary>
+    public static readonly IValueConverter PageMargin = new FuncValueConverter<bool, Avalonia.Thickness>(fill => fill ? new Avalonia.Thickness(0) : new Avalonia.Thickness(2));
 
     public static readonly IValueConverter IsNonZero = new FuncValueConverter<int, bool>(i => i != 0);
 

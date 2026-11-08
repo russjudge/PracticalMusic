@@ -5,10 +5,10 @@
              x:Class="PracticalMusic.App.Views.PlayerView"
              x:Name="Root">
   <Grid RowDefinitions="Auto,*,Auto">
-    <!-- song bar -->
-    <Border Grid.Row="0" Classes="navbar" Padding="8,4">
-      <Grid ColumnDefinitions="Auto,*,Auto,Auto">
-        <Button Grid.Column="0" Content="⏮ Prev song" Command="{Binding PrevSongCommand}" IsEnabled="{Binding CanPrevSong}" />
+    <!-- song bar (hidden in full-display mode) -->
+    <Border Grid.Row="0" Classes="navbar" Padding="8,4" IsVisible="{Binding ShowChrome}">
+      <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto">
+        <Button Focusable="False" Grid.Column="0" Content="⏮ Prev song" Command="{Binding PrevSongCommand}" IsEnabled="{Binding CanPrevSong}" />
         <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center" VerticalAlignment="Center">
           <TextBlock Text="{Binding SongTitle}" FontSize="18" FontWeight="SemiBold" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
           <ComboBox ItemsSource="{Binding Recordings}" SelectedItem="{Binding CurrentRecording, Mode=TwoWay}" IsVisible="{Binding HasMultipleRecordings}" MinWidth="140" VerticalAlignment="Center">
@@ -21,50 +21,76 @@
           <TextBlock Text="{Binding SyncText}" Classes="muted" VerticalAlignment="Center" IsVisible="{Binding SyncText, Converter={x:Static conv:AppConverters.IsNotEmpty}}" />
           <TextBlock Text="{Binding StatusText}" Foreground="OrangeRed" VerticalAlignment="Center" IsVisible="{Binding StatusText, Converter={x:Static conv:AppConverters.IsNotEmpty}}" />
         </StackPanel>
-        <ToggleButton Grid.Column="2" Content="Markers" IsChecked="{Binding ShowMarkers, Mode=TwoWay}" Margin="0,0,6,0" ToolTip.Tip="Show the time markers on the pages" />
-        <Button Grid.Column="3" Content="Next song ⏭" Command="{Binding NextSongCommand}" IsEnabled="{Binding CanNextSong}" />
+        <ToggleButton Focusable="False" Grid.Column="2" Content="Markers" IsChecked="{Binding ShowMarkers, Mode=TwoWay}" Margin="0,0,6,0" ToolTip.Tip="Show the time markers on the pages" />
+        <ToggleButton Focusable="False" Grid.Column="3" Content="⛶ Full display" IsChecked="{Binding FillDisplay, Mode=TwoWay}" Margin="0,0,6,0"
+                      ToolTip.Tip="The pages fill the whole screen. Move the mouse or tap to show the controls; Esc returns (F11 toggles)." />
+        <Button Focusable="False" Grid.Column="4" Content="Next song ⏭" Command="{Binding NextSongCommand}" IsEnabled="{Binding CanNextSong}" />
       </Grid>
     </Border>
 
-    <!-- pages -->
-    <Grid Grid.Row="1" x:Name="PagesArea" Background="#10808080">
-      <Grid.ColumnDefinitions>
-        <ColumnDefinition Width="*" />
-        <ColumnDefinition Width="{Binding HasRightPage, Converter={x:Static conv:AppConverters.StarIfTrue}}" />
-      </Grid.ColumnDefinitions>
-      <ctl:PageCanvas Grid.Column="0" Tag="L" Margin="2"
-                      Page="{Binding LeftPage}"
-                      Highlight="{Binding LeftHighlight}"
-                      Markers="{Binding LeftMarkers}"
-                      ShowMarkers="{Binding ShowMarkers}"
-                      Label="{Binding LeftLabel}"
-                      TapCommand="{Binding PageTapCommand}" />
-      <ctl:PageCanvas Grid.Column="1" Tag="R" Margin="2"
-                      IsVisible="{Binding HasRightPage}"
-                      Page="{Binding RightPage}"
-                      Highlight="{Binding RightHighlight}"
-                      Markers="{Binding RightMarkers}"
-                      ShowMarkers="{Binding ShowMarkers}"
-                      Label="{Binding RightLabel}"
-                      TapCommand="{Binding PageTapCommand}" />
-    </Grid>
+    <!-- pages, with floating controls in full-display mode -->
+    <Panel Grid.Row="1" x:Name="PagesHost">
+      <Grid x:Name="PagesArea" Background="#10808080" Classes.fill="{Binding FillDisplay}" Cursor="{Binding PagesCursor}">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="*" />
+          <ColumnDefinition Width="{Binding HasRightPage, Converter={x:Static conv:AppConverters.StarIfTrue}}" />
+        </Grid.ColumnDefinitions>
+        <ctl:PageCanvas Grid.Column="0" Tag="L" Margin="{Binding FillDisplay, Converter={x:Static conv:AppConverters.PageMargin}}"
+                        Page="{Binding LeftPage}"
+                        Highlight="{Binding LeftHighlight}"
+                        Markers="{Binding LeftMarkers}"
+                        ShowMarkers="{Binding ShowMarkers}"
+                        Label="{Binding LeftLabel}"
+                        TapCommand="{Binding PageTapCommand}" />
+        <ctl:PageCanvas Grid.Column="1" Tag="R" Margin="{Binding FillDisplay, Converter={x:Static conv:AppConverters.PageMargin}}"
+                        IsVisible="{Binding HasRightPage}"
+                        Page="{Binding RightPage}"
+                        Highlight="{Binding RightHighlight}"
+                        Markers="{Binding RightMarkers}"
+                        ShowMarkers="{Binding ShowMarkers}"
+                        Label="{Binding RightLabel}"
+                        TapCommand="{Binding PageTapCommand}" />
+      </Grid>
 
-    <!-- transport -->
-    <Border Grid.Row="2" Classes="navbar" Padding="8,6">
+      <!-- floating controls: shown on pointer movement / tap, fade while the music plays -->
+      <Border x:Name="OverlayBar" IsVisible="{Binding ShowOverlay}" VerticalAlignment="Bottom" HorizontalAlignment="Center" Margin="12,0,12,18"
+              Background="#D8202020" CornerRadius="12" Padding="12,8" BoxShadow="0 4 20 0 #80000000">
+        <WrapPanel ItemSpacing="8" LineSpacing="6" HorizontalAlignment="Center">
+          <Button Focusable="False" Content="⏹" Classes="icon" Command="{Binding StopCommand}" ToolTip.Tip="Stop and rewind" />
+          <Button Focusable="False" Content="{Binding PlayPauseGlyph}" Classes="big accent" Command="{Binding PlayPauseCommand}" IsEnabled="{Binding HasRecording}" ToolTip.Tip="Play / pause (Space)" />
+          <Button Focusable="False" Content="−5s" Command="{Binding NudgeCommand}" CommandParameter="-5000" />
+          <Button Focusable="False" Content="+5s" Command="{Binding NudgeCommand}" CommandParameter="5000" />
+          <TextBlock VerticalAlignment="Center" FontFamily="Consolas, monospace" Foreground="White">
+            <Run Text="{Binding PositionText}" /><Run Text=" / " /><Run Text="{Binding DurationText}" />
+          </TextBlock>
+          <Border Width="1" Background="Gray" Opacity="0.5" Margin="4,0" />
+          <Button Focusable="False" Content="◀" Classes="icon" Command="{Binding TurnPageCommand}" CommandParameter="prev" ToolTip.Tip="Previous page (PageUp or ↑)" />
+          <TextBlock Text="{Binding PageText}" VerticalAlignment="Center" Foreground="White" MinWidth="110" TextAlignment="Center" />
+          <Button Focusable="False" Content="▶" Classes="icon" Command="{Binding TurnPageCommand}" CommandParameter="next" ToolTip.Tip="Next page (PageDown or ↓)" />
+          <Border Width="1" Background="Gray" Opacity="0.5" Margin="4,0" />
+          <TextBlock Text="{Binding SyncText}" Classes="muted" VerticalAlignment="Center" IsVisible="{Binding SyncText, Converter={x:Static conv:AppConverters.IsNotEmpty}}" />
+          <TextBlock Text="{Binding StatusText}" Foreground="OrangeRed" VerticalAlignment="Center" IsVisible="{Binding StatusText, Converter={x:Static conv:AppConverters.IsNotEmpty}}" />
+          <Button Focusable="False" Content="⤢ Exit full display" Command="{Binding ExitFillDisplayCommand}" ToolTip.Tip="Back to the normal view (Esc)" />
+        </WrapPanel>
+      </Border>
+    </Panel>
+
+    <!-- transport (hidden in full-display mode) -->
+    <Border Grid.Row="2" Classes="navbar" Padding="8,6" IsVisible="{Binding ShowChrome}">
       <Grid ColumnDefinitions="Auto,Auto,*,Auto,Auto" RowDefinitions="Auto">
         <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6">
-          <Button Content="⏹" Classes="icon" Command="{Binding StopCommand}" ToolTip.Tip="Stop and rewind" />
-          <Button Content="{Binding PlayPauseGlyph}" Classes="big accent" Command="{Binding PlayPauseCommand}" IsEnabled="{Binding HasRecording}" ToolTip.Tip="Play / pause (Space)" />
-          <Button Content="−5s" Command="{Binding NudgeCommand}" CommandParameter="-5000" />
-          <Button Content="+5s" Command="{Binding NudgeCommand}" CommandParameter="5000" />
+          <Button Focusable="False" Content="⏹" Classes="icon" Command="{Binding StopCommand}" ToolTip.Tip="Stop and rewind" />
+          <Button Focusable="False" Content="{Binding PlayPauseGlyph}" Classes="big accent" Command="{Binding PlayPauseCommand}" IsEnabled="{Binding HasRecording}" ToolTip.Tip="Play / pause (Space)" />
+          <Button Focusable="False" Content="−5s" Command="{Binding NudgeCommand}" CommandParameter="-5000" />
+          <Button Focusable="False" Content="+5s" Command="{Binding NudgeCommand}" CommandParameter="5000" />
         </StackPanel>
         <TextBlock Grid.Column="1" Text="{Binding PositionText}" Classes="label" Margin="12,0,6,0" FontFamily="Consolas, monospace" />
         <Slider Grid.Column="2" x:Name="SeekSlider" Minimum="0" Maximum="{Binding DurationMs}" Value="{Binding SliderPosition, Mode=TwoWay}" IsEnabled="{Binding HasRecording}" />
         <TextBlock Grid.Column="3" Text="{Binding DurationText}" Classes="label" Margin="6,0,12,0" FontFamily="Consolas, monospace" />
         <StackPanel Grid.Column="4" Orientation="Horizontal" Spacing="6">
-          <Button Content="◀" Classes="icon" Command="{Binding TurnPageCommand}" CommandParameter="prev" ToolTip.Tip="Previous page" />
+          <Button Focusable="False" Content="◀" Classes="icon" Command="{Binding TurnPageCommand}" CommandParameter="prev" ToolTip.Tip="Previous page" />
           <TextBlock Text="{Binding PageText}" Classes="label" MinWidth="110" TextAlignment="Center" />
-          <Button Content="▶" Classes="icon" Command="{Binding TurnPageCommand}" CommandParameter="next" ToolTip.Tip="Next page" />
+          <Button Focusable="False" Content="▶" Classes="icon" Command="{Binding TurnPageCommand}" CommandParameter="next" ToolTip.Tip="Next page" />
         </StackPanel>
       </Grid>
     </Border>

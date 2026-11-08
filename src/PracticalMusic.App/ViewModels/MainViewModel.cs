@@ -26,6 +26,8 @@ public sealed partial class MainViewModel : ViewModelBase
     [ObservableProperty] private bool _isPlayerSelected;
     [ObservableProperty] private bool _isShareSelected;
     [ObservableProperty] private bool _isAboutSelected;
+    /// <summary>Full-display mode (Player option): navigation and status bars are hidden and the window is full screen.</summary>
+    [ObservableProperty] private bool _isImmersive;
 
     public string Title => (Session.IsDirty ? "* " : "") + Session.Book.Title + " - Practical Music";
 
@@ -69,6 +71,13 @@ public sealed partial class MainViewModel : ViewModelBase
         else Dispatcher.UIThread.Post(() => StatusText = text);
     }
 
+    public void SetImmersive(bool on)
+    {
+        if (IsImmersive == on) return;
+        IsImmersive = on;
+        try { AppServices.Platform.SetImmersive(on); } catch { /* cosmetic */ }
+    }
+
     public void NavigateTo(object view, bool pushBack = false)
     {
         if (ReferenceEquals(CurrentView, view)) return;
@@ -90,6 +99,11 @@ public sealed partial class MainViewModel : ViewModelBase
         if (Dialogs.Current != null)
         {
             Dialogs.Current.Close("cancel");
+            return true;
+        }
+        if (IsImmersive)
+        {
+            Player.FillDisplay = false; // back leaves full-display mode first
             return true;
         }
         if (_backStack.Count > 0)
