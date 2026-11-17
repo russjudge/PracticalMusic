@@ -15,5 +15,9 @@ packaging/linux/omarchy/src/
 packaging/linux/omarchy/*.pkg.tar.*
 *.log
 
+# website: data folders of local runs
+src/PracticalMusic.Web/data/
+src/PracticalMusic.Web/data-dev/
+
 # local test data (PDF/MP3 samples are not part of the repo)
 testdata/

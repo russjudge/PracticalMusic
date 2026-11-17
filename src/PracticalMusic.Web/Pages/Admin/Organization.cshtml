@@ -1,0 +1,55 @@
+@page "/Admin/Organization/{id:long}"
+@model AdminOrganizationModel
+@{
+    ViewData["Title"] = Model.Org.Name;
+}
+<p class="crumbs"><a href="/Admin">Administration</a> › <a href="/Admin/Organizations">Organizations</a> › @Model.Org.Name</p>
+<h1>@Model.Org.Name</h1>
+<div asp-validation-summary="All" class="alert error" role="alert"></div>
+<div class="grid2">
+    <form method="post" class="form">
+        <label>Name <input asp-for="Name" required maxlength="120"></label>
+        <label>Type
+            <select asp-for="Kind">
+                @foreach (var k in OrgKinds.All)
+                {
+                    <option value="@k">@OrgKinds.Display(k)</option>
+                }
+            </select>
+        </label>
+        <label>Description <textarea asp-for="Description" rows="3" maxlength="1000"></textarea></label>
+        <label>Contact e-mail <input asp-for="ContactEmail" type="email" maxlength="254"></label>
+        <label class="check"><input asp-for="AllowJoinRequests" type="checkbox"> Listed on the sign-up page</label>
+        <label class="check"><input asp-for="IsActive" type="checkbox"> Active (members have access)</label>
+        <button type="submit">Save</button>
+    </form>
+    <div>
+        <div class="card">
+            <h3>Managers</h3>
+            @if (Model.Managers.Count == 0)
+            {
+                <p class="bad">This organization has no manager yet.</p>
+            }
+            <ul class="plain">
+                @foreach (var m in Model.Managers)
+                {
+                    <li>@m.FullName · @m.Email</li>
+                }
+            </ul>
+            <form method="post" asp-page-handler="AddManager" class="form">
+                <label>E-mail address <input name="email" type="email" required maxlength="254"></label>
+                <label>Name <span class="muted">(if new)</span><input name="fullName" maxlength="120"></label>
+                <button type="submit" class="secondary">Add manager</button>
+            </form>
+            <p><a href="/Org/@Model.Org.Id/Members">All members and requests →</a></p>
+        </div>
+        <div class="card danger-zone">
+            <h3>Delete the organization</h3>
+            <p>Deletes its books and memberships for good. User accounts stay. To keep the data, untick “Active” instead.</p>
+            <form method="post" asp-page-handler="Delete" class="form">
+                <label>Type the name to confirm <input name="confirmName" autocomplete="off"></label>
+                <button type="submit" class="danger">Delete for good</button>
+            </form>
+        </div>
+    </div>
+</div>

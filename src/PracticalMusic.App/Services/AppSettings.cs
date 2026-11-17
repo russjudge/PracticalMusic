@@ -20,6 +20,18 @@ public sealed class AppSettings
     public bool FillDisplayInPlayer { get; set; }
     public double Volume { get; set; } = 1.0;
 
+    // ---- the Practical Music website (Online page)
+    /// <summary>Address of the website the app signs in to.</summary>
+    public string ServerUrl { get; set; } = Core.Online.OnlineClient.DefaultServer;
+    /// <summary>App token issued by the website at sign-in (the password itself is never stored). Revocable on the website's Devices page.</summary>
+    public string? OnlineToken { get; set; }
+    public string? OnlineUserEmail { get; set; }
+    public string? OnlineUserName { get; set; }
+    /// <summary>The organization chosen on the Online page.</summary>
+    public long? OnlineOrgId { get; set; }
+    /// <summary>Connect to the website for synchronized playback while signed in.</summary>
+    public bool OnlineSyncEnabled { get; set; } = true;
+
     private static string? _path;
 
     public static AppSettings Load(string appDataDir)

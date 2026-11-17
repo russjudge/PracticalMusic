@@ -36,6 +36,7 @@
       <TextBlock TextWrapping="Wrap" Text="4. Edit timing: select the song and press 'Edit timing…'. Play the recording; when the music reaches the top of the next page press 'Page N starts now' (key N). Tap the page where the music is to add markers, which drive the highlight and tap-to-seek." />
       <TextBlock TextWrapping="Wrap" Text="5. Play: pages turn by themselves and the current line is highlighted; tap a spot on the page to jump there. Landscape shows two pages, portrait one. 'Full display' (or F11) makes the pages fill the whole screen; move the mouse or tap to show the controls, Esc returns." />
       <TextBlock TextWrapping="Wrap" Text="6. Save and share: 'Save (with media)' makes a self-contained .pmbook; 'Save (links only)' makes a small file that points at the PDF and MP3s. Share sends the book to other devices on your network and can keep playback in sync." />
+      <TextBlock TextWrapping="Wrap" Text="7. Online: sign in with your account on the Practical Music website to get your organization's books and their updates, upload changes (managers), and lead or follow synchronized playback with everyone connected to the website, browsers included." />
     </StackPanel>
   </ScrollViewer>
 </UserControl>

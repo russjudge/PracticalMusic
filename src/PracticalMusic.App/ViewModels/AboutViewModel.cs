@@ -21,7 +21,9 @@ public sealed partial class AboutViewModel : ViewModelBase
         "Practical Music links PDF sheet music with audio recordings. Import a PDF and MP3s, mark where each " +
         "page and each line starts in the recording, then play: the pages turn themselves and the part being " +
         "played is highlighted. Books can be saved with the media embedded or as lightweight link files, sent to " +
-        "other devices on the local network, and played back in sync across devices.";
+        "other devices on the local network, and played back in sync across devices. The Online page connects to a " +
+        "Practical Music website, where your church or band keeps its books: download them and their updates, upload " +
+        "changes (managers), and play in sync with everyone - including iPhones and iPads, which use the website in a browser.";
     public string Credits =>
         "Built by Russ Judge with the assistance of Claude (Anthropic).\n\n" +
         "Open source components: Avalonia UI (MIT), PDFium (BSD), LibVLC / LibVLCSharp (LGPL), CommunityToolkit.Mvvm (MIT).";

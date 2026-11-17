@@ -26,6 +26,7 @@ public partial class MainView : UserControl
         if (top != null)
         {
             AppServices.Storage = top.StorageProvider;
+            AppServices.Launcher = top.Launcher;
             top.BackRequested += OnBackRequested;
         }
         if (DataContext is MainViewModel vm && !ReferenceEquals(vm, _vm))

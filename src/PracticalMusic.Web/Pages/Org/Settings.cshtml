@@ -1,0 +1,24 @@
+@page "/Org/{orgId:long}/Settings"
+@model OrgSettingsModel
+@{
+    ViewData["Title"] = "Settings of " + Model.Org.Name;
+}
+<p class="crumbs"><a href="/Org/@Model.Org.Id">@Model.Org.Name</a> › Settings</p>
+<h1>Settings of @Model.Org.Name</h1>
+<div class="narrow left">
+    <form method="post" class="form">
+        <div asp-validation-summary="All" class="alert error" role="alert"></div>
+        <label>Description <span class="muted">(shown to members)</span><textarea asp-for="Description" rows="3" maxlength="1000"></textarea></label>
+        <label>Contact e-mail <span class="muted">(optional)</span><input asp-for="ContactEmail" type="email" maxlength="254"></label>
+        <label class="check"><input asp-for="AllowJoinRequests" type="checkbox"> Listed on the sign-up page: people can ask to join</label>
+        <button type="submit">Save</button>
+    </form>
+    @if (Model.IsSiteAdmin)
+    {
+        <p><a href="/Admin/Organization/@Model.Org.Id">Administrator settings (name, type, active)</a></p>
+    }
+    else
+    {
+        <p class="muted small">The name and type of the organization are set by the website administrator.</p>
+    }
+</div>

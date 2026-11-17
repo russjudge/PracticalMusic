@@ -112,11 +112,13 @@ public sealed partial class ShareViewModel : ViewModelBase, IActivatable
         IsFollowing = sync.Role == SyncRole.Follower;
         SyncStatus = sync.Role switch
         {
-            SyncRole.Leader => "You are leading. Play/pause/seek in the Player is mirrored on followers.",
+            SyncRole.Leader => sync.Online.Leading && sync.Online.IsConnected
+                ? "You are leading - on this network and through the website. Play/pause/seek in the Player is mirrored on followers."
+                : "You are leading. Play/pause/seek in the Player is mirrored on followers.",
             SyncRole.Follower => sync.ClockSynced
-                ? $"Following {sync.Leader?.Name ?? "leader"} · clock offset {sync.ClockOffsetMs:0} ms · round trip {sync.RttMs:0} ms"
-                : $"Following {sync.Leader?.Name ?? "leader"} · measuring clock…",
-            _ => "Not synchronized. Lead a session, or follow a device that is leading."
+                ? $"Following {sync.LeaderName ?? "leader"}{(sync.FollowTransport == SyncTransport.Online ? " via the website" : "")} · clock offset {sync.ClockOffsetMs:0} ms · round trip {sync.RttMs:0} ms"
+                : $"Following {sync.LeaderName ?? "leader"} · measuring clock…",
+            _ => "Not synchronized. Lead a session, or follow a device that is leading. Devices that use the website (browsers, other networks) are on the Online page."
         };
     }
 
@@ -289,7 +291,7 @@ public sealed partial class ShareViewModel : ViewModelBase, IActivatable
     private void Follow(PeerItemViewModel? peer)
     {
         if (peer == null) return;
-        AppServices.Sync.Follow(peer.Id);
+        AppServices.Sync.FollowLan(peer.Id);
         UpdateSyncStatus();
         AddLog($"Following {peer.Name}.");
         AppServices.Main?.ShowPlayerCommand.Execute(null);

@@ -1,0 +1,48 @@
+@page "/Org/{orgId:long}/Member/{userId:long}"
+@model OrgMemberModel
+@{
+    ViewData["Title"] = Model.Member.FullName;
+}
+<p class="crumbs"><a href="/Org/@Model.Org.Id">@Model.Org.Name</a> › <a href="/Org/@Model.Org.Id/Members">Members</a> › @Model.Member.FullName</p>
+<h1>@Model.Member.FullName</h1>
+<div asp-validation-summary="All" class="alert error" role="alert"></div>
+<div class="grid2">
+    <div>
+        <form method="post" class="form">
+            <label>E-mail address <input value="@Model.Member.Email" disabled></label>
+            <label>Name <input asp-for="FullName" required maxlength="120" disabled="@Model.ReadOnly"></label>
+            <label>Phone <input asp-for="Phone" type="tel" maxlength="40" disabled="@Model.ReadOnly"></label>
+            <label>Mailing address <textarea asp-for="Address" rows="3" maxlength="500" disabled="@Model.ReadOnly"></textarea></label>
+            <label>Role in @Model.Org.Name
+                <select asp-for="MemberRole" disabled="@Model.ReadOnly">
+                    <option value="member">Member (reads and plays the books)</option>
+                    <option value="manager">Manager (maintains books, manages members)</option>
+                </select>
+            </label>
+            @if (!Model.ReadOnly)
+            {
+                <button type="submit">Save</button>
+            }
+        </form>
+        @if (Model.ReadOnly)
+        {
+            <p class="muted">The website administrator's details can only be changed by the administrator.</p>
+        }
+        <p class="muted small">Changes to the name, phone and address are visible in every organization this person belongs to.</p>
+    </div>
+    <div class="card">
+        <h3>Account</h3>
+        <p>Status: @Display.StatusName(Model.Membership.Status)<br>
+            E-mail confirmed: @(Model.Member.IsEmailVerified ? "yes" : "not yet")<br>
+            Last sign-in: @Display.When(Model.Member.LastLoginAt)</p>
+        @if (!Model.ReadOnly)
+        {
+            <form method="post" asp-page-handler="SendReset" class="inline">
+                <button type="submit" class="secondary">@(Model.Member.HasPassword ? "E-mail a password reset link" : "Send the invitation again")</button>
+            </form>
+            <form method="post" asp-page-handler="Remove" class="inline" data-confirm="Remove @Model.Member.FullName from @Model.Org.Name?">
+                <button type="submit" class="danger">Remove from @Model.Org.Name</button>
+            </form>
+        }
+    </div>
+</div>

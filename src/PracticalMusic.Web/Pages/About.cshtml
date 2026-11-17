@@ -1,0 +1,41 @@
+@page
+@model AboutModel
+@{
+    ViewData["Title"] = "About";
+}
+<h1>About Practical Music</h1>
+<p class="lead">Practical Music links PDF sheet music with audio recordings. Import a PDF and MP3s, mark where each page
+    and each line starts in the recording, then play: the pages turn themselves and the part being played is highlighted.</p>
+
+<div class="grid2">
+    <div class="card">
+        <h2>On this website</h2>
+        <ul>
+            <li><b>Library</b> - your organization's books. Managers add PDFs, define the songs, add recordings and set the timing, just like in the app.</li>
+            <li><b>Play</b> - one page in portrait, two in landscape; pages turn with the recording; tap a line to jump there. Keys: Space play/pause, ←/→ ±5 s, PageUp/PageDown turn pages, N/P next/previous song, F full display.</li>
+            <li><b>Share</b> - lead a synchronized session, or follow whoever leads. Browsers and the apps play in sync through this website.</li>
+        </ul>
+    </div>
+    <div class="card">
+        <h2>iPhone and iPad</h2>
+        <p>No App Store needed: open this website in <b>Safari</b>, tap <b>Share</b> → <b>Add to Home Screen</b>. Practical Music then starts full screen like an app.</p>
+        <p>Before following a leader, tap the page once so the browser allows the recording to play by itself.</p>
+        <h2>Windows, Linux and Android</h2>
+        <p>The apps work on their own and on the local network. Sign in on their <b>Online</b> page to download your organization's books, upload changes (managers) and sync with everyone here. <a href="/Downloads">Downloads</a></p>
+    </div>
+</div>
+
+<h2>Credits</h2>
+<p>Author: <b>Russ Judge</b>. Built with the assistance of Claude (Anthropic). Version @Model.Version.</p>
+<p class="muted">Open source components: ASP.NET Core (MIT), PDFium (BSD-3), MailKit/MimeKit (MIT), MySqlConnector (MIT), Dapper (Apache 2.0); in the apps also Avalonia UI (MIT), LibVLC (LGPL-2.1), CommunityToolkit.Mvvm (MIT).</p>
+
+<h2>How it was made</h2>
+<p>These are the requests, word for word, that Russ Judge gave Claude to create Practical Music.</p>
+<details class="card">
+    <summary>The original request (the apps)</summary>
+    <pre class="prompt">@Model.OriginalPrompt</pre>
+</details>
+<details class="card">
+    <summary>The request for this website</summary>
+    <pre class="prompt">@Model.WebsitePrompt</pre>
+</details>

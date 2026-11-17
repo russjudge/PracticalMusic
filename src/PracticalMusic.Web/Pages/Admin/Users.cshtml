@@ -1,0 +1,43 @@
+@page
+@model AdminUsersModel
+@{
+    ViewData["Title"] = "Users";
+}
+<h1>Administration</h1>
+<nav class="tabs">
+    <a href="/Admin">Overview</a>
+    <a href="/Admin/Organizations">Organizations</a>
+    <a class="active" href="/Admin/Users">Users</a>
+    <a href="/Admin/Email">E-mail</a>
+</nav>
+<form method="get" class="form inline-form">
+    <label>Search name or e-mail <input name="q" value="@Model.Q" autofocus></label>
+    <button type="submit">Search</button>
+</form>
+<p class="muted">@Model.Total user(s)@(string.IsNullOrEmpty(Model.Q) ? "" : $" matching “{Model.Q}”").</p>
+<table class="table">
+    <thead><tr><th>Name</th><th>E-mail</th><th>Confirmed</th><th>Flags</th><th>Last sign-in</th><th>Created</th></tr></thead>
+    <tbody>
+        @foreach (var u in Model.Users)
+        {
+            <tr class="@(u.IsDisabled ? "inactive" : "")">
+                <td><a href="/Admin/User/@u.Id"><b>@u.FullName</b></a></td>
+                <td>@u.Email</td>
+                <td>@(u.IsEmailVerified ? "yes" : "no")</td>
+                <td>@(u.IsSiteAdmin ? "admin " : "")@(u.IsDisabled ? "disabled " : "")@(u.HasPassword ? "" : "invited")</td>
+                <td>@Display.When(u.LastLoginAt)</td>
+                <td>@Display.Date(u.CreatedAt)</td>
+            </tr>
+        }
+    </tbody>
+</table>
+<p class="pager">
+    @if (Model.PageIndex > 0)
+    {
+        <a class="button small secondary" href="?q=@Uri.EscapeDataString(Model.Q ?? "")&amp;p=@(Model.PageIndex - 1)">← Previous</a>
+    }
+    @if ((Model.PageIndex + 1) * AdminUsersModel.PageSize < Model.Total)
+    {
+        <a class="button small secondary" href="?q=@Uri.EscapeDataString(Model.Q ?? "")&amp;p=@(Model.PageIndex + 1)">Next →</a>
+    }
+</p>

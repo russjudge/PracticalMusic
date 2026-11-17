@@ -1,0 +1,41 @@
+@page
+@model DownloadsModel
+@{
+    ViewData["Title"] = "Apps for Windows, Linux and Android";
+}
+<h1>Practical Music apps</h1>
+<p>The apps work on their own, share books with other devices on the same Wi-Fi, and - after signing in on their
+    <b>Online</b> page with your account on this website - download your organization's books and play in sync with everyone here.
+    iPhone and iPad users do not need an app: use this website in Safari (Share → Add to Home Screen).</p>
+
+@if (!Model.Visible)
+{
+    <div class="card"><p>Sign in to see the downloads.</p></div>
+}
+else if (Model.Items.Count == 0)
+{
+    <div class="card"><p class="muted">No installers have been published on this website yet. (Administrators: copy the files from the build's <code>dist</code> folder into <code>@Model.Folder</code>.)</p></div>
+}
+else
+{
+    <table class="table">
+        <thead><tr><th>Platform</th><th>File</th><th>Size</th><th>Date</th></tr></thead>
+        <tbody>
+            @foreach (var i in Model.Items)
+            {
+                <tr>
+                    <td>@i.Platform</td>
+                    <td><a href="/downloads/@Uri.EscapeDataString(i.FileName)">@i.FileName</a></td>
+                    <td>@Text.Bytes(i.Size)</td>
+                    <td>@Display.Date(i.Modified)</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<div class="grid3">
+    <div class="card"><h3>Windows</h3><p>Unzip and run <code>PracticalMusic.exe</code> (or run the Setup program). If SmartScreen warns, choose <i>More info → Run anyway</i>.</p></div>
+    <div class="card"><h3>Linux</h3><p>Extract the .tar.gz and run <code>install-user.sh</code>. Audio needs the <code>vlc</code> package.</p></div>
+    <div class="card"><h3>Android</h3><p>Open the .apk on the phone or tablet and allow installing apps from this source when asked.</p></div>
+</div>

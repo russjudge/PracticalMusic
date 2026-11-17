@@ -37,7 +37,7 @@ public sealed partial class PlayerViewModel : ViewModelBase, IActivatable
 
     public BookSession Session => AppServices.Session;
     public IAudioPlayer Audio => AppServices.Audio;
-    public SyncService Sync => AppServices.Sync;
+    public SyncCoordinator Sync => AppServices.Sync;
 
     public ObservableCollection<Song> Songs { get; } = new();
     public ObservableCollection<Recording> Recordings { get; } = new();
@@ -562,14 +562,17 @@ public sealed partial class PlayerViewModel : ViewModelBase, IActivatable
     {
         OnPropertyChanged(nameof(IsLeading));
         OnPropertyChanged(nameof(IsFollowing));
+        var online = Sync.FollowTransport == SyncTransport.Online;
         SyncText = Sync.Role switch
         {
-            SyncRole.Leader => "Leading sync",
+            SyncRole.Leader => Sync.Online.Leading && Sync.Online.IsConnected ? "Leading sync (network + website)" : "Leading sync",
             SyncRole.Follower => Sync.ClockSynced
-                ? $"Following {Sync.Leader?.Name ?? "leader"} (±{Sync.RttMs / 2:0} ms)"
+                ? $"Following {Sync.LeaderName ?? "leader"}{(online ? " via the website" : "")} (±{Sync.RttMs / 2:0} ms)"
                 : (DateTime.UtcNow - Sync.FollowingSince).TotalSeconds > 6
-                    ? $"Following {Sync.Leader?.Name ?? "leader"} – no clock reply yet; both firewalls must allow inbound UDP {LanBus.DiscoveryPort}"
-                    : $"Following {Sync.Leader?.Name ?? "leader"} (syncing clock…)",
+                    ? online
+                        ? $"Following {Sync.LeaderName ?? "leader"} – no answer from the website yet ({Sync.Online.Status})"
+                        : $"Following {Sync.LeaderName ?? "leader"} – no clock reply yet; both firewalls must allow inbound UDP {LanBus.DiscoveryPort}"
+                    : $"Following {Sync.LeaderName ?? "leader"} (syncing clock…)",
             _ => ""
         };
         if (IsLeading && IsPlaying) _heartbeat.Start(); else _heartbeat.Stop();

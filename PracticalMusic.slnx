@@ -1,8 +1,11 @@
 <Solution>
   <Folder Name="/docs/">
+    <File Path="docs/EMAIL-SETUP.md" />
     <File Path="docs/INSTALL-Android.md" />
     <File Path="docs/INSTALL-Linux.md" />
+    <File Path="docs/INSTALL-Server-Debian.md" />
     <File Path="docs/INSTALL-Windows.md" />
+    <File Path="docs/WEBSITE.md" />
   </Folder>
   <Folder Name="/Solution Items/">
     <File Path="README.md" />
@@ -12,9 +15,11 @@
     <Project Path="src/PracticalMusic.App/PracticalMusic.App.csproj" />
     <Project Path="src/PracticalMusic.Core/PracticalMusic.Core.csproj" />
     <Project Path="src/PracticalMusic.Desktop/PracticalMusic.Desktop.csproj" />
+    <Project Path="src/PracticalMusic.Web/PracticalMusic.Web.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/PracticalMusic.Core.Tests/PracticalMusic.Core.Tests.csproj" />
+    <Project Path="tests/PracticalMusic.Web.Tests/PracticalMusic.Web.Tests.csproj" />
   </Folder>
   <Folder Name="/tools/">
     <Project Path="tools/TestDataGenerator/TestDataGenerator.csproj" />

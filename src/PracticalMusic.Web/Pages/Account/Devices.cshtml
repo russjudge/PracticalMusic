@@ -1,0 +1,44 @@
+@page
+@model DevicesModel
+@{
+    ViewData["Title"] = "Apps & devices";
+}
+<h1>Your account</h1>
+<nav class="tabs">
+    <a href="/Account">Contact details</a>
+    <a href="/Account/Password">Password</a>
+    <a class="active" href="/Account/Devices">Apps &amp; devices</a>
+    <a href="/Account/Organizations">My organizations</a>
+</nav>
+<p>These Practical Music apps are signed in with your account. Sign out a device you no longer use, or one you do not recognize.</p>
+@if (Model.Tokens.Count == 0)
+{
+    <p class="muted">No app is signed in. In the app for Windows, Linux or Android, open the <b>Online</b> page and sign in with your e-mail address.</p>
+}
+else
+{
+    <table class="table">
+        <thead><tr><th>Device</th><th>System</th><th>Signed in</th><th>Last used</th><th>Expires</th><th></th></tr></thead>
+        <tbody>
+            @foreach (var t in Model.Tokens)
+            {
+                <tr>
+                    <td>@t.DeviceName</td>
+                    <td>@t.Platform</td>
+                    <td>@Display.Date(t.CreatedAt)</td>
+                    <td>@Display.When(t.LastUsedAt)</td>
+                    <td>@Display.Date(t.ExpiresAt)</td>
+                    <td>
+                        <form method="post" asp-page-handler="Revoke" class="inline">
+                            <input type="hidden" name="id" value="@t.Id">
+                            <button type="submit" class="small secondary">Sign out</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <form method="post" asp-page-handler="RevokeAll" data-confirm="Sign out every app that uses your account?">
+        <button type="submit" class="danger">Sign out all apps</button>
+    </form>
+}

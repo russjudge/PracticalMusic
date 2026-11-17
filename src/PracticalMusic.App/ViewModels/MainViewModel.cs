@@ -15,6 +15,7 @@ public sealed partial class MainViewModel : ViewModelBase
     public LibraryViewModel Library { get; }
     public PlayerViewModel Player { get; }
     public ShareViewModel Share { get; }
+    public OnlineViewModel Online { get; }
     public AboutViewModel About { get; }
     public DialogService Dialogs => AppServices.Dialogs;
     public BookSession Session => AppServices.Session;
@@ -25,6 +26,7 @@ public sealed partial class MainViewModel : ViewModelBase
     [ObservableProperty] private bool _isLibrarySelected = true;
     [ObservableProperty] private bool _isPlayerSelected;
     [ObservableProperty] private bool _isShareSelected;
+    [ObservableProperty] private bool _isOnlineSelected;
     [ObservableProperty] private bool _isAboutSelected;
     /// <summary>Full-display mode (Player option): navigation and status bars are hidden and the window is full screen.</summary>
     [ObservableProperty] private bool _isImmersive;
@@ -36,6 +38,7 @@ public sealed partial class MainViewModel : ViewModelBase
         Library = new LibraryViewModel();
         Player = new PlayerViewModel();
         Share = new ShareViewModel();
+        Online = new OnlineViewModel();
         About = new AboutViewModel();
 
         Session.PropertyChanged += (_, _) => OnPropertyChanged(nameof(Title));
@@ -50,6 +53,7 @@ public sealed partial class MainViewModel : ViewModelBase
     {
         var settings = AppServices.Settings;
         if (settings.NetworkEnabled) AppServices.StartNetwork();
+        _ = Online.InitializeAsync(); // resumes the website sign-in and connects for synchronized playback
 
         var last = App.StartupFile ?? settings.LastBookPath;
         if (!string.IsNullOrEmpty(last) && File.Exists(last))
@@ -90,6 +94,7 @@ public sealed partial class MainViewModel : ViewModelBase
         IsLibrarySelected = view is LibraryViewModel || view is TimingEditorViewModel;
         IsPlayerSelected = view is PlayerViewModel;
         IsShareSelected = view is ShareViewModel;
+        IsOnlineSelected = view is OnlineViewModel;
         IsAboutSelected = view is AboutViewModel;
     }
 
@@ -126,6 +131,7 @@ public sealed partial class MainViewModel : ViewModelBase
     [RelayCommand] private void ShowLibrary() => NavigateTo(Library);
     [RelayCommand] private void ShowPlayer() => NavigateTo(Player);
     [RelayCommand] private void ShowShare() => NavigateTo(Share);
+    [RelayCommand] private void ShowOnline() => NavigateTo(Online);
     [RelayCommand] private void ShowAbout() => NavigateTo(About);
 
     public void OpenTimingEditor(TimingEditorViewModel editor) => NavigateTo(editor, pushBack: true);

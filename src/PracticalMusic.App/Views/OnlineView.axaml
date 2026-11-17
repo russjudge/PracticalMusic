@@ -1,0 +1,130 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:conv="using:PracticalMusic.App.Converters"
+             x:Class="PracticalMusic.App.Views.OnlineView"
+             x:Name="Root">
+  <ScrollViewer>
+    <StackPanel Margin="16" Spacing="10" MaxWidth="900" HorizontalAlignment="Left">
+      <TextBlock Classes="h1" Text="Online - your organization's website" />
+      <TextBlock Classes="muted" TextWrapping="Wrap"
+                 Text="Sign in with your account on the Practical Music website to get your church's or band's books on this device, keep them up to date, upload changes (managers), and play in sync with everyone connected - including iPhones and iPads in a browser." />
+
+      <!-- website and account -->
+      <Border Classes="card">
+        <StackPanel Spacing="8">
+          <WrapPanel ItemSpacing="8" LineSpacing="8">
+            <TextBlock Text="Website:" Classes="label" />
+            <TextBox Text="{Binding ServerUrl, Mode=TwoWay}" MinWidth="320" IsEnabled="{Binding IsSignedOut}" />
+            <Button Content="Open in browser" Command="{Binding OpenWebsiteCommand}" />
+          </WrapPanel>
+
+          <StackPanel Spacing="8" IsVisible="{Binding IsSignedOut}">
+            <WrapPanel ItemSpacing="8" LineSpacing="8">
+              <TextBlock Text="E-mail:" Classes="label" />
+              <TextBox Text="{Binding Email, Mode=TwoWay}" MinWidth="240" Watermark="you@example.com" />
+              <TextBlock Text="Password:" Classes="label" />
+              <TextBox Text="{Binding Password, Mode=TwoWay}" PasswordChar="●" MinWidth="200" />
+              <Button Content="Sign in" Classes="accent" Command="{Binding SignInCommand}" IsEnabled="{Binding !IsBusy}" />
+            </WrapPanel>
+            <TextBlock Classes="muted" FontSize="12" TextWrapping="Wrap"
+                       Text="No account yet? Create one on the website and ask to join your organization; a manager approves it. The app keeps a revocable sign-in, never your password." />
+            <Button Content="Create an account on the website…" Command="{Binding CreateAccountCommand}" />
+          </StackPanel>
+
+          <StackPanel Spacing="8" IsVisible="{Binding IsSignedIn}">
+            <WrapPanel ItemSpacing="8" LineSpacing="8">
+              <TextBlock Text="{Binding UserText}" Classes="label" TextWrapping="Wrap" />
+              <Button Content="Sign out" Command="{Binding SignOutCommand}" />
+            </WrapPanel>
+            <WrapPanel ItemSpacing="8" LineSpacing="8">
+              <TextBlock Text="Organization:" Classes="label" />
+              <ComboBox ItemsSource="{Binding Organizations}" SelectedItem="{Binding SelectedOrg, Mode=TwoWay}" MinWidth="260">
+                <ComboBox.ItemTemplate>
+                  <DataTemplate>
+                    <TextBlock Text="{Binding Name}" />
+                  </DataTemplate>
+                </ComboBox.ItemTemplate>
+              </ComboBox>
+            </WrapPanel>
+          </StackPanel>
+          <TextBlock Text="{Binding Message}" Foreground="OrangeRed" TextWrapping="Wrap" IsVisible="{Binding Message, Converter={x:Static conv:AppConverters.IsNotEmpty}}" />
+        </StackPanel>
+      </Border>
+
+      <!-- the book that is open -->
+      <Border Classes="card" IsVisible="{Binding IsSignedIn}">
+        <StackPanel Spacing="8">
+          <TextBlock Classes="h2" Margin="0" Text="The open book" />
+          <TextBlock Text="{Binding CurrentBookText}" TextWrapping="Wrap" />
+          <WrapPanel ItemSpacing="6" LineSpacing="6">
+            <Button Content="Check for updates" Command="{Binding CheckForUpdateCommand}" />
+            <Button Content="⬇ Get the new revision" Classes="accent" Command="{Binding UpdateCurrentCommand}" IsVisible="{Binding CurrentHasUpdate}" />
+            <Button Content="⬆ Upload this book" Command="{Binding UploadCurrentCommand}" IsVisible="{Binding CanUpload}"
+                    ToolTip.Tip="Managers: store the open book (with its PDFs and recordings) on the website as a new revision" />
+          </WrapPanel>
+        </StackPanel>
+      </Border>
+
+      <!-- the organization's books -->
+      <Grid ColumnDefinitions="*,Auto,Auto" IsVisible="{Binding IsSignedIn}">
+        <TextBlock Grid.Column="0" Classes="h2" Text="{Binding BooksHeading}" VerticalAlignment="Bottom" />
+        <Button Grid.Column="1" Content="↻ Refresh" Command="{Binding RefreshBooksCommand}" Margin="0,0,6,0" />
+        <Button Grid.Column="2" Content="⬇ Download all updates" Command="{Binding DownloadAllUpdatesCommand}" ToolTip.Tip="Newer revisions of the books on this device (books you changed here are skipped)" />
+      </Grid>
+      <TextBlock Text="This organization has no books on the website yet." Classes="muted" IsVisible="{Binding NoBooks}" />
+      <ItemsControl ItemsSource="{Binding Books}" IsVisible="{Binding IsSignedIn}">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate>
+            <Border Classes="card">
+              <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto">
+                <TextBlock Grid.Row="0" Text="{Binding Title}" FontSize="16" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                <TextBlock Grid.Row="1" Text="{Binding Details}" Classes="muted" FontSize="12" TextWrapping="Wrap" />
+                <TextBlock Grid.Row="2" Text="{Binding Status}" FontSize="12" Foreground="{DynamicResource SystemAccentColor}" TextWrapping="Wrap" />
+                <Button Grid.Row="0" Grid.RowSpan="3" Grid.Column="1" VerticalAlignment="Center" Content="{Binding ActionText}"
+                        Command="{Binding #Root.DataContext.OpenBookCommand}" CommandParameter="{Binding}" IsEnabled="{Binding !IsBusy}" />
+              </Grid>
+            </Border>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+
+      <!-- synchronized playback through the website -->
+      <TextBlock Classes="h2" Text="Play together through the website" />
+      <Border Classes="card">
+        <StackPanel Spacing="8">
+          <ToggleSwitch IsChecked="{Binding OnlineSyncEnabled, Mode=TwoWay}" OnContent="Connected for synchronized playback" OffContent="Not connected for synchronized playback" />
+          <TextBlock Text="{Binding ConnectionText}" Classes="muted" FontSize="12" TextWrapping="Wrap" />
+          <TextBlock Text="{Binding SyncStatus}" TextWrapping="Wrap" />
+          <TextBlock Classes="muted" FontSize="12" TextWrapping="Wrap"
+                     Text="Leading here leads on the local network and through the website at the same time, so app users on the Wi-Fi and browser users (iPhone, iPad, other networks) follow together. The website connection only needs normal HTTPS - no firewall port has to be opened on this device." />
+          <WrapPanel ItemSpacing="6" LineSpacing="6">
+            <Button Content="🎼 Lead a session" Classes="accent" Command="{Binding LeadCommand}" IsVisible="{Binding !IsLeading}" />
+            <Button Content="Stop leading" Command="{Binding StopSyncCommand}" IsVisible="{Binding IsLeading}" />
+            <Button Content="Stop following" Command="{Binding StopSyncCommand}" IsVisible="{Binding IsFollowingOnline}" />
+          </WrapPanel>
+        </StackPanel>
+      </Border>
+      <TextBlock Text="Nobody else is connected through the website right now." Classes="muted" IsVisible="{Binding NoPeers}" />
+      <ItemsControl ItemsSource="{Binding Peers}">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate>
+            <Border Classes="card">
+              <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto">
+                <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="8">
+                  <TextBlock Text="{Binding Name}" FontSize="16" FontWeight="SemiBold" />
+                  <Border Background="{DynamicResource SystemAccentColor}" CornerRadius="4" Padding="6,1" IsVisible="{Binding Leading}">
+                    <TextBlock Text="LEADING" Foreground="White" FontSize="11" />
+                  </Border>
+                  <TextBlock Text="(you follow)" Classes="muted" IsVisible="{Binding IsFollowed}" VerticalAlignment="Center" />
+                </StackPanel>
+                <TextBlock Grid.Row="1" Text="{Binding Details}" Classes="muted" FontSize="12" TextWrapping="Wrap" />
+                <Button Grid.Row="0" Grid.RowSpan="2" Grid.Column="1" VerticalAlignment="Center" Content="🔗 Follow" Classes="accent"
+                        Command="{Binding #Root.DataContext.FollowCommand}" CommandParameter="{Binding}" IsVisible="{Binding CanFollow}" />
+              </Grid>
+            </Border>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

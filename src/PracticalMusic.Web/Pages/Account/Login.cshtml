@@ -1,0 +1,32 @@
+@page
+@model LoginModel
+@{
+    ViewData["Title"] = "Sign in";
+}
+<div class="narrow">
+    <h1>Sign in</h1>
+    @if (Model.NeedsVerification)
+    {
+        <div class="alert warn">
+            <p>Please confirm your e-mail address first: open the link in the e-mail we sent to <b>@Model.Email</b>.</p>
+            <form method="post" asp-page="/Account/ResendVerification">
+                <input type="hidden" name="Email" value="@Model.Email">
+                <button type="submit" class="secondary">Send the confirmation e-mail again</button>
+            </form>
+        </div>
+    }
+    <form method="post" class="form">
+        <div asp-validation-summary="ModelOnly" class="alert error" role="alert"></div>
+        <input type="hidden" asp-for="ReturnUrl">
+        <label>E-mail address
+            <input asp-for="Email" type="email" autocomplete="username" required autofocus>
+        </label>
+        <label>Password
+            <input asp-for="Password" type="password" autocomplete="current-password" required>
+        </label>
+        <label class="check"><input asp-for="RememberMe" type="checkbox"> Keep me signed in on this device</label>
+        <button type="submit" class="big">Sign in</button>
+    </form>
+    <p><a href="/Account/ForgotPassword">Forgot your password?</a></p>
+    <p class="muted">New here? <a href="/Account/Register">Create an account</a> and ask to join your church or band.</p>
+</div>

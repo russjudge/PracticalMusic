@@ -1,0 +1,20 @@
+@page
+@model ResendVerificationModel
+@{
+    ViewData["Title"] = "Confirmation e-mail";
+}
+<div class="narrow">
+    <h1>Confirmation e-mail</h1>
+    @if (Model.Sent)
+    {
+        <div class="alert ok"><p>If <b>@Model.Email</b> belongs to an account that still needs confirming, a new link is on its way. Check the spam folder too.</p></div>
+        <p><a class="button" href="/Account/Login">Back to sign in</a></p>
+    }
+    else
+    {
+        <form method="post" class="form">
+            <label>E-mail address <input asp-for="Email" type="email" required autocomplete="email"></label>
+            <button type="submit">Send the confirmation e-mail again</button>
+        </form>
+    }
+</div>

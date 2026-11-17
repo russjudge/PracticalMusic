@@ -1,0 +1,61 @@
+@page
+@model AdminOrganizationsModel
+@{
+    ViewData["Title"] = "Organizations";
+}
+<h1>Administration</h1>
+<nav class="tabs">
+    <a href="/Admin">Overview</a>
+    <a class="active" href="/Admin/Organizations">Organizations</a>
+    <a href="/Admin/Users">Users</a>
+    <a href="/Admin/Email">E-mail</a>
+</nav>
+<div asp-validation-summary="All" class="alert error" role="alert"></div>
+
+<h2>Set up a new organization</h2>
+<form method="post" class="form grid-form">
+    <label>Name <input asp-for="Input.Name" required maxlength="120" placeholder="e.g. Grace Community Church"></label>
+    <label>Type
+        <select asp-for="Input.Kind">
+            @foreach (var k in OrgKinds.All)
+            {
+                <option value="@k">@OrgKinds.Display(k)</option>
+            }
+        </select>
+    </label>
+    <label class="wide">Description <span class="muted">(optional)</span><textarea asp-for="Input.Description" rows="2" maxlength="1000"></textarea></label>
+    <label>Contact e-mail <span class="muted">(optional)</span><input asp-for="Input.ContactEmail" type="email" maxlength="254"></label>
+    <label class="check"><input asp-for="Input.AllowJoinRequests" type="checkbox"> Listed on the sign-up page</label>
+    <fieldset class="wide">
+        <legend>First manager <span class="muted">(optional - can be added later)</span></legend>
+        <label>E-mail address <input asp-for="Input.ManagerEmail" type="email" maxlength="254"></label>
+        <label>Name <span class="muted">(if they have no account yet)</span><input asp-for="Input.ManagerName" maxlength="120"></label>
+        <p class="muted small">New people receive an invitation to choose a password; people with an account get access right away.</p>
+    </fieldset>
+    <div class="wide"><button type="submit" class="big">Create the organization</button></div>
+</form>
+
+<h2>All organizations (@Model.Organizations.Count)</h2>
+<table class="table">
+    <thead><tr><th>Name</th><th>Type</th><th>Members</th><th>Managers</th><th>Waiting</th><th>Books</th><th>Sign-up</th><th>Status</th><th></th></tr></thead>
+    <tbody>
+        @foreach (var o in Model.Organizations)
+        {
+            var s = Model.Stats.GetValueOrDefault(o.Id) ?? new OrgStats();
+            <tr class="@(o.IsActive ? "" : "inactive")">
+                <td><a href="/Org/@o.Id"><b>@o.Name</b></a></td>
+                <td>@OrgKinds.Display(o.Kind)</td>
+                <td>@s.Members</td>
+                <td class="@(s.Managers == 0 ? "bad" : "")">@s.Managers</td>
+                <td>@s.Pending</td>
+                <td>@s.Books</td>
+                <td>@(o.AllowJoinRequests ? "listed" : "hidden")</td>
+                <td>@(o.IsActive ? "active" : "inactive")</td>
+                <td class="nowrap">
+                    <a class="button small secondary" href="/Admin/Organization/@o.Id">Edit</a>
+                    <a class="button small secondary" href="/Org/@o.Id/Members">Members</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

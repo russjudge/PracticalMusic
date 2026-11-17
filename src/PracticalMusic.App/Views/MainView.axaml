@@ -8,14 +8,16 @@
     <Grid RowDefinitions="Auto,*,Auto">
       <!-- navigation bar -->
       <Border Grid.Row="0" Classes="navbar" Padding="8,6" IsVisible="{Binding !IsImmersive}">
-        <Grid ColumnDefinitions="Auto,*,Auto">
-          <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="2">
+        <Grid ColumnDefinitions="*,Auto">
+          <!-- wraps onto a second line on narrow (phone) screens -->
+          <WrapPanel Grid.Column="0" Orientation="Horizontal" ItemSpacing="2" LineSpacing="2">
             <ToggleButton Classes="nav" Content="📚 Library" IsChecked="{Binding IsLibrarySelected, Mode=OneWay}" Command="{Binding ShowLibraryCommand}" />
             <ToggleButton Classes="nav" Content="▶ Play" IsChecked="{Binding IsPlayerSelected, Mode=OneWay}" Command="{Binding ShowPlayerCommand}" />
-            <ToggleButton Classes="nav" Content="📡 Share" IsChecked="{Binding IsShareSelected, Mode=OneWay}" Command="{Binding ShowShareCommand}" />
+            <ToggleButton Classes="nav" Content="📡 Share" IsChecked="{Binding IsShareSelected, Mode=OneWay}" Command="{Binding ShowShareCommand}" ToolTip.Tip="Devices on this network" />
+            <ToggleButton Classes="nav" Content="🌐 Online" IsChecked="{Binding IsOnlineSelected, Mode=OneWay}" Command="{Binding ShowOnlineCommand}" ToolTip.Tip="Your organization's books on the website, and sync with browsers" />
             <ToggleButton Classes="nav" Content="ℹ About" IsChecked="{Binding IsAboutSelected, Mode=OneWay}" Command="{Binding ShowAboutCommand}" />
-          </StackPanel>
-          <TextBlock Grid.Column="2" Text="{Binding Title}" VerticalAlignment="Center" Margin="12,0,4,0" Classes="muted" TextTrimming="CharacterEllipsis" />
+          </WrapPanel>
+          <TextBlock Grid.Column="1" Text="{Binding Title}" VerticalAlignment="Center" Margin="12,0,4,0" Classes="muted" TextTrimming="CharacterEllipsis" MaxWidth="360" />
         </Grid>
       </Border>
 

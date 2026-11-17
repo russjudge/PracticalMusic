@@ -22,6 +22,9 @@
     <DataTemplate DataType="vm:ShareViewModel">
       <views:ShareView />
     </DataTemplate>
+    <DataTemplate DataType="vm:OnlineViewModel">
+      <views:OnlineView />
+    </DataTemplate>
     <DataTemplate DataType="vm:AboutViewModel">
       <views:AboutView />
     </DataTemplate>

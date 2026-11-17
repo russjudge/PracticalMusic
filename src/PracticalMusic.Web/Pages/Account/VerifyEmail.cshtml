@@ -1,0 +1,25 @@
+@page
+@model VerifyEmailModel
+@{
+    ViewData["Title"] = "Confirm e-mail address";
+}
+<div class="narrow">
+    @if (Model.Verified)
+    {
+        <h1>Thank you!</h1>
+        <div class="alert ok">
+            <p>Your e-mail address <b>@Model.Email</b> is confirmed.</p>
+            @if (Model.HasPendingRequests)
+            {
+                <p>The managers of your organization have been told about your request. You will receive an e-mail as soon as you have access.</p>
+            }
+        </div>
+        <p><a class="button" href="/Account/Login">Sign in</a></p>
+    }
+    else
+    {
+        <h1>This link does not work</h1>
+        <div class="alert warn"><p>The link has expired or was already used. Sign in to have a new one sent to you.</p></div>
+        <p><a class="button" href="/Account/Login">Sign in</a></p>
+    }
+</div>

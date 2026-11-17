@@ -90,6 +90,14 @@ If TCP 47313 is already taken on a machine, the app uses the next free port (473
 actual port on the *Share* page; open that one instead. The port can be changed in `settings.json`
 (`"TransferPort": 47313`; `0` lets the system choose). Discovery always uses UDP 47312.
 
+## Online: the Practical Music website
+
+On the **🌐 Online** page, sign in with your account on the Practical Music website (default
+`https://practicalmusic.russjudge.com`). You then get your organization's books (and their updates), managers can
+upload changes, and you can lead or follow synchronized playback with everyone connected to the website - browsers on
+iPhones and iPads included. This only needs an outgoing HTTPS connection: **no firewall port has to be opened** for it.
+No account yet? *Create an account on the website…* opens the sign-up page. See [WEBSITE.md](WEBSITE.md).
+
 ## Building the packages yourself
 
 Requires the .NET 10 SDK (`sudo pacman -S dotnet-sdk` on Arch):

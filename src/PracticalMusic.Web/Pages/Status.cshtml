@@ -1,0 +1,10 @@
+@page "/Status"
+@model StatusModel
+@{
+    ViewData["Title"] = Model.Heading;
+}
+<div class="narrow">
+    <h1>@Model.Heading</h1>
+    <p>@Model.Explanation</p>
+    <p><a class="button" href="/">Back to the start page</a></p>
+</div>

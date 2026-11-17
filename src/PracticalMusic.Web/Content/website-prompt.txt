@@ -1,0 +1,30 @@
+I need a way for ios devices to work for this, but I have no ios device to compile or test for, and I do not want to deal with the Apple Store.
+
+Build a website that the Linux, Windows, and Android apps can work with, that will have the same functionality through the browser as those apps.  Make the necessary changes to those apps to allow for integration with the website.
+
+Design the website in a way that it can be hosted anywhere--but each host will use its own database--there instance will be unique to that host.
+
+The first host, however, where this will be set up on with be a Debian 13 server, running Apache with MariaDB.  This host will be https://practicalmusic.russjudge.com
+
+
+The website will need security--username will be the email address of the user.   You will need a "Forgot Password" function.
+
+The database will  be a MariaDB.  You will need to create all the SQL to create the database and a user for that database.  MariaDB already exists on the server this will be installed on.
+
+Design the capability of having multiple organizations using this application.  One user may belong to multiple organization.  Each organization will set up their own books, so that a user will only be able to access books for organizations they belong to.
+
+Only the website administrator (me) can set up a new organization.  Most likely, an organization will be a church, but it could also be a band.  Create a page that allows the administrator to set up an organization.
+
+Users of an organization will be of two classes--one that can manage their organization's users and can maintain books and other files, and normal users that can read-only on the books.
+
+The Windows, Linux, and Android apps can function stand-alone, including linking with other Windows, linux, and android devices.  If the web site, through the user's browser, can connect this way as well, then enable this.  However, you will need to add the ability to add username connectivity to the website, where the desktop/android application can download books and sync together with the website, and if they have the organization privilege, the can upload books.
+
+Any connected user can become the leader of the synced playback, include users connected through a browser on the website--if this cannot be done through the browser, the set up the mechanism through the server--and provide instruction for what firewall changes may need made.
+
+The maintainer of the organization on the website will also have the privilege of being able to add, remove, or edit other users of the organization.
+
+The website administrator will also have full rights to do anything.
+
+Add a way for users to sign up for the website--provide a drop-down of organizations to select, and they will need to enter their email address and contact information.  They will require approval from the user with management privilege for that organization before they can access the organization.  When approved, an email will need sent to the user to inform them that they now have access--so include code for sending out emails. From practicalmusic.russjudge.com, emails will go out on russjudge.com--however, russjudge.com currently is not able to send emails--I will need to set up something through my dns provider at dynu.com and probably some server settings--I will need instructions on how to do this.
+
+If you have any questions or need clarification, let me know.

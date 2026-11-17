@@ -1,0 +1,42 @@
+@page
+@model AdminIndexModel
+@{
+    ViewData["Title"] = "Administration";
+}
+<h1>Administration</h1>
+<nav class="tabs">
+    <a class="active" href="/Admin">Overview</a>
+    <a href="/Admin/Organizations">Organizations</a>
+    <a href="/Admin/Users">Users</a>
+    <a href="/Admin/Email">E-mail</a>
+</nav>
+<div class="stats">
+    <div class="stat"><b>@Model.Organizations</b><span>organizations</span></div>
+    <div class="stat"><b>@Model.Users</b><span>users</span></div>
+    <div class="stat"><b>@Model.Books</b><span>books</span></div>
+    <div class="stat"><b>@Model.Connections</b><span>connected for sync now</span></div>
+    <div class="stat @(Model.EmailFailed > 0 ? "bad" : "")"><b>@Model.EmailQueued / @Model.EmailFailed</b><span>e-mails waiting / failed</span></div>
+</div>
+<p class="muted">E-mail: @Model.EmailTransport · Database: @Model.Database · Data folder: <code>@Model.DataFolder</code></p>
+@if (Model.EmailFailed > 0)
+{
+    <div class="alert warn">Some e-mails could not be sent. See <a href="/Admin/Email">E-mail</a> and docs/EMAIL-SETUP.md.</div>
+}
+
+<h2>Recent activity</h2>
+<table class="table small">
+    <thead><tr><th>When</th><th>Who</th><th>What</th><th>Details</th><th>Org</th><th>IP</th></tr></thead>
+    <tbody>
+        @foreach (var a in Model.Audit)
+        {
+            <tr>
+                <td class="nowrap">@Display.When(a.At)</td>
+                <td>@(a.UserName ?? (a.UserId?.ToString() ?? ""))</td>
+                <td>@a.Action</td>
+                <td>@a.Details</td>
+                <td>@(a.OrgId is { } o && Model.OrgNames.TryGetValue(o, out var n) ? n : a.OrgId?.ToString())</td>
+                <td>@a.Ip</td>
+            </tr>
+        }
+    </tbody>
+</table>

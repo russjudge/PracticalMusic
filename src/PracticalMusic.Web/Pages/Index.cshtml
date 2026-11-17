@@ -1,0 +1,72 @@
+@page
+@model IndexModel
+@{
+    ViewData["Title"] = Model.SignedIn ? "Your organizations" : "";
+}
+@if (!Model.SignedIn)
+{
+    <section class="hero">
+        <div>
+            <h1>Sheet music that follows the recording</h1>
+            <p class="lead">Practical Music links your PDF scores to MP3 recordings. Press play and the pages turn by themselves,
+                the line being played is highlighted, and everyone in the band can follow the same playback in sync.</p>
+            <p class="actions">
+                <a class="button big" href="/Account/Login">Sign in</a>
+                <a class="button big secondary" href="/Account/Register">Create an account</a>
+            </p>
+            <p class="muted small">Your church or band keeps its own books here; managers decide who gets access.</p>
+        </div>
+        <img class="hero-icon" src="~/img/icon-256.png" alt="" width="180" height="180">
+    </section>
+    <section class="grid3">
+        <div class="card"><h3>📚 Your organization's library</h3><p>Books with PDFs, songs, recordings and timing, kept on this website for every member.</p></div>
+        <div class="card"><h3>▶ Play in any browser</h3><p>iPhone, iPad, Mac, Chromebook or PC - nothing to install. On iOS, use Share → Add to Home Screen.</p></div>
+        <div class="card"><h3>🔗 Play together</h3><p>Anyone can lead; everyone else follows in sync - browsers and the Windows, Linux and Android apps alike.</p></div>
+    </section>
+}
+else
+{
+    <h1>Hello, @Model.UserName</h1>
+    @foreach (var invite in Model.Invitations)
+    {
+        <div class="alert ok"><p>You are invited to join <b>@invite.Name</b>. <a href="/Account/Organizations">Accept or decline the invitation</a>.</p></div>
+    }
+    @if (Model.Organizations.Count == 0 && Model.Pending.Count == 0 && Model.Invitations.Count == 0)
+    {
+        <div class="card">
+            <p>You do not belong to an organization yet.</p>
+            <p><a class="button" href="/Account/Organizations">Ask to join an organization</a></p>
+        </div>
+    }
+    <div class="org-cards">
+        @foreach (var o in Model.Organizations)
+        {
+            <div class="card org-card">
+                <div class="org-card-head">
+                    <h2>@o.Name</h2>
+                    <span class="badge @(o.Role == "manager" ? "accent" : "")">@Display.RoleName(o.Role)</span>
+                </div>
+                <p class="muted">@OrgKinds.Display(o.Kind)</p>
+                <p class="actions">
+                    <a class="button" href="/App?org=@o.Id">🎵 Open the music</a>
+                    <a class="button secondary" href="/Org/@o.Id">Books</a>
+                    @if (o.CanEdit)
+                    {
+                        <a class="button secondary" href="/Org/@o.Id/Members">Members@(Model.PendingCounts.TryGetValue(o.Id, out var n) && n > 0 ? $" ({n} waiting)" : "")</a>
+                    }
+                </p>
+            </div>
+        }
+    </div>
+    @if (Model.Pending.Count > 0)
+    {
+        <h2>Waiting for approval</h2>
+        <ul class="plain">
+            @foreach (var p in Model.Pending)
+            {
+                <li>@p.Name - requested @Display.Date(p.RequestedAt). A manager will review it; you will get an e-mail.</li>
+            }
+        </ul>
+    }
+    <p class="muted small">Want another organization? <a href="/Account/Organizations">Ask to join</a>. Using the app on Windows, Linux or Android? Open its <b>Online</b> page and sign in with this e-mail address.</p>
+}

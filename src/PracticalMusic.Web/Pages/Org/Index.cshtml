@@ -1,0 +1,92 @@
+@page "/Org/{orgId:long}"
+@model OrgIndexModel
+@{
+    ViewData["Title"] = Model.Org.Name;
+}
+<div class="page-head">
+    <div>
+        <h1>@Model.Org.Name</h1>
+        <p class="muted">@OrgKinds.Display(Model.Org.Kind) · you are a @Display.RoleName(Model.Role).ToLowerInvariant()@(Model.Org.IsActive ? "" : " · INACTIVE")</p>
+        @if (!string.IsNullOrWhiteSpace(Model.Org.Description))
+        {
+            <p>@Model.Org.Description</p>
+        }
+    </div>
+    <div class="actions">
+        <a class="button" href="/App?org=@Model.Org.Id">🎵 Open the music</a>
+        @if (Model.IsManager)
+        {
+            <a class="button secondary" href="/Org/@Model.Org.Id/Members">Members@(Model.PendingCount > 0 ? $" ({Model.PendingCount} waiting)" : "")</a>
+            <a class="button secondary" href="/Org/@Model.Org.Id/Settings">Settings</a>
+        }
+    </div>
+</div>
+<div asp-validation-summary="All" class="alert error" role="alert"></div>
+
+<h2>Books</h2>
+@if (Model.Books.Count == 0)
+{
+    <p class="muted">No books yet.@(Model.IsManager ? " Create one in the music app, or upload a .pmbook made with the app below." : "")</p>
+}
+else
+{
+    <table class="table books">
+        <thead><tr><th>Title</th><th>Songs</th><th>Size</th><th>Revision</th><th>Last change</th><th></th></tr></thead>
+        <tbody>
+            @foreach (var b in Model.Books)
+            {
+                <tr>
+                    <td><a href="/App?org=@Model.Org.Id&amp;book=@b.Id&amp;view=player"><b>@b.Title</b></a></td>
+                    <td>@b.SongCount</td>
+                    <td>@Text.Bytes(b.MediaBytes)</td>
+                    <td>@b.Revision</td>
+                    <td>@Display.When(b.UpdatedAt)@(b.UpdatedByName != null ? " · " + b.UpdatedByName : "")</td>
+                    <td class="nowrap">
+                        <a class="button small" href="/App?org=@Model.Org.Id&amp;book=@b.Id&amp;view=player">▶ Play</a>
+                        @if (Model.IsManager)
+                        {
+                            <a class="button small secondary" href="/App?org=@Model.Org.Id&amp;book=@b.Id&amp;view=library">Edit</a>
+                        }
+                        <a class="button small secondary" href="/api/books/@b.Id/package" title="Download as .pmbook for the app">⬇ .pmbook</a>
+                        @if (Model.IsManager)
+                        {
+                            <form method="post" asp-page-handler="Delete" class="inline" data-confirm="Delete “@b.Title” for everyone in @Model.Org.Name? This cannot be undone.">
+                                <input type="hidden" name="bookId" value="@b.Id">
+                                <button type="submit" class="small danger">Delete</button>
+                            </form>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@if (Model.IsManager)
+{
+    <h2>Add or update a book</h2>
+    <div class="grid2">
+        <div class="card">
+            <h3>Create in the browser</h3>
+            <p>Add PDFs, define the songs, add recordings and set the timing - the same steps as in the app.</p>
+            <p><a class="button" href="/App?org=@Model.Org.Id&amp;view=library&amp;new=1">➕ New book</a></p>
+        </div>
+        <div class="card">
+            <h3>Upload a .pmbook</h3>
+            @* sent by site.js straight to the API (with progress); the form only provides the anti-forgery token *@
+            <form method="post" class="form" id="pmbook-upload" data-org="@Model.Org.Id">
+                <input type="file" name="file" accept=".pmbook" required>
+                <fieldset>
+                    <legend>If this organization already has the same book:</legend>
+                    <label class="check"><input type="radio" name="mode" value="update" checked> update it (a new revision)</label>
+                    <label class="check"><input type="radio" name="mode" value="copy"> keep both (store as a separate book)</label>
+                </fieldset>
+                <button type="submit">Upload</button>
+                <progress max="1" value="0" hidden></progress>
+                <p class="upload-status" role="status" aria-live="polite"></p>
+            </form>
+            <p class="muted small">Save it in the app with “Save (with media)” first - or upload straight from the app's Online page.</p>
+        </div>
+    </div>
+}
+<p class="muted small">Members can download a book as a .pmbook and open it in the app for Windows, Linux or Android - or simply sign in on the app's Online page.</p>

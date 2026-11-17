@@ -1,0 +1,156 @@
+@page "/Org/{orgId:long}/Members"
+@model OrgMembersModel
+@{
+    ViewData["Title"] = "Members of " + Model.Org.Name;
+    var pending = Model.Members.Where(m => m.Status == MembershipStatus.Pending).ToList();
+    var active = Model.Members.Where(m => m.Status == MembershipStatus.Active).ToList();
+    var declined = Model.Members.Where(m => m.Status == MembershipStatus.Rejected).ToList();
+    var invited = Model.Members.Where(m => m.Status == MembershipStatus.Invited).ToList();
+}
+<p class="crumbs"><a href="/Org/@Model.Org.Id">@Model.Org.Name</a> › Members</p>
+<h1>Members of @Model.Org.Name</h1>
+<div asp-validation-summary="All" class="alert error" role="alert"></div>
+
+<h2>Waiting for approval (@pending.Count)</h2>
+@if (pending.Count == 0)
+{
+    <p class="muted">No requests are waiting.</p>
+}
+else
+{
+    <div class="request-list">
+        @foreach (var m in pending)
+        {
+            <div class="card request">
+                <div>
+                    <b>@m.FullName</b> · <a href="mailto:@m.Email">@m.Email</a>
+                    @if (m.EmailVerifiedAt == null)
+                    {
+                        <span class="badge warn" title="The person has not opened the confirmation e-mail yet">address not confirmed yet</span>
+                    }
+                    <div class="muted small">
+                        @if (!string.IsNullOrWhiteSpace(m.Phone)) { <span>☎ @m.Phone · </span> }
+                        @if (!string.IsNullOrWhiteSpace(m.Address)) { <span>@m.Address · </span> }
+                        asked @Display.When(m.RequestedAt)
+                    </div>
+                    @if (!string.IsNullOrWhiteSpace(m.RequestMessage))
+                    {
+                        <blockquote>@m.RequestMessage</blockquote>
+                    }
+                </div>
+                <div class="actions">
+                    <form method="post" asp-page-handler="Approve" class="inline">
+                        <input type="hidden" name="userId" value="@m.UserId"><input type="hidden" name="role" value="member">
+                        <button type="submit" class="small">Approve</button>
+                    </form>
+                    <form method="post" asp-page-handler="Approve" class="inline" data-confirm="Approve @m.FullName as a manager? Managers can change books and manage members.">
+                        <input type="hidden" name="userId" value="@m.UserId"><input type="hidden" name="role" value="manager">
+                        <button type="submit" class="small secondary">Approve as manager</button>
+                    </form>
+                    <form method="post" asp-page-handler="Decline" class="inline" data-confirm="Decline the request of @m.FullName? They receive a short e-mail.">
+                        <input type="hidden" name="userId" value="@m.UserId">
+                        <button type="submit" class="small danger">Decline</button>
+                    </form>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+<h2>Members (@active.Count)</h2>
+<table class="table">
+    <thead><tr><th>Name</th><th>E-mail</th><th>Phone</th><th>Role</th><th>Last sign-in</th><th></th></tr></thead>
+    <tbody>
+        @foreach (var m in active)
+        {
+            <tr>
+                <td>@m.FullName@(m.IsSiteAdmin ? " (website admin)" : "")@(m.IsDisabled ? " (disabled)" : "")@(!m.HasPassword ? " (invited)" : "")</td>
+                <td><a href="mailto:@m.Email">@m.Email</a></td>
+                <td>@m.Phone</td>
+                <td>
+                    <form method="post" asp-page-handler="Role" class="inline role-form">
+                        <input type="hidden" name="userId" value="@m.UserId">
+                        <select name="role" class="autosubmit" aria-label="Role of @m.FullName">
+                            <option value="member" selected="@(m.Role == "member")">Member (read only)</option>
+                            <option value="manager" selected="@(m.Role == "manager")">Manager</option>
+                        </select>
+                        <noscript><button type="submit" class="small">Change</button></noscript>
+                    </form>
+                </td>
+                <td>@Display.When(m.LastLoginAt)</td>
+                <td class="nowrap">
+                    <a class="button small secondary" href="/Org/@Model.Org.Id/Member/@m.UserId">Edit</a>
+                    <form method="post" asp-page-handler="Remove" class="inline" data-confirm="Remove @m.FullName from @Model.Org.Name? Their account stays; they lose access to this organization's books.">
+                        <input type="hidden" name="userId" value="@m.UserId">
+                        <button type="submit" class="small danger">Remove</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@if (invited.Count > 0)
+{
+    <h2>Invited, not accepted yet (@invited.Count)</h2>
+    <table class="table">
+        <thead><tr><th>E-mail</th><th>Role</th><th>Invited</th><th></th></tr></thead>
+        <tbody>
+            @foreach (var m in invited)
+            {
+                <tr>
+                    <td>@m.Email</td>
+                    <td>@Display.RoleName(m.Role)</td>
+                    <td>@Display.When(m.DecidedAt ?? m.RequestedAt)</td>
+                    <td class="nowrap">
+                        <form method="post" asp-page-handler="Remove" class="inline" data-confirm="Withdraw the invitation for @m.Email?">
+                            <input type="hidden" name="userId" value="@m.UserId">
+                            <button type="submit" class="small secondary">Withdraw</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<h2>Add a person</h2>
+<form method="post" asp-page-handler="Add" class="form inline-form">
+    <label>E-mail address <input name="email" type="email" required maxlength="254"></label>
+    <label>Name <span class="muted">(for new accounts)</span> <input name="fullName" maxlength="120"></label>
+    <label>Role
+        <select name="role"><option value="member">Member (read only)</option><option value="manager">Manager</option></select>
+    </label>
+    <button type="submit">Add</button>
+</form>
+<p class="muted small">People without an account get an invitation e-mail to choose a password and have access right away.
+    People who already have an account get an e-mail and accept the invitation on their account page.</p>
+
+@if (declined.Count > 0)
+{
+    <details>
+        <summary>Declined requests (@declined.Count)</summary>
+        <table class="table">
+            <tbody>
+                @foreach (var m in declined)
+                {
+                    <tr>
+                        <td>@m.FullName</td>
+                        <td>@m.Email</td>
+                        <td>@Display.When(m.DecidedAt)</td>
+                        <td class="nowrap">
+                            <form method="post" asp-page-handler="Approve" class="inline">
+                                <input type="hidden" name="userId" value="@m.UserId"><input type="hidden" name="role" value="member">
+                                <button type="submit" class="small secondary">Approve after all</button>
+                            </form>
+                            <form method="post" asp-page-handler="Remove" class="inline">
+                                <input type="hidden" name="userId" value="@m.UserId">
+                                <button type="submit" class="small secondary">Forget</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </details>
+}

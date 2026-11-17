@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>PracticalMusic.Web</RootNamespace>
+    <AssemblyName>PracticalMusic.Web</AssemblyName>
+    <!-- systemd/Apache deployments publish a self-contained linux-x64 build (packaging/web/build-web.sh) -->
+    <RuntimeIdentifiers>linux-x64;linux-arm64;win-x64</RuntimeIdentifiers>
+    <UserSecretsId>practicalmusic-web</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Dapper" Version="2.1.89" />
+    <PackageReference Include="MySqlConnector" Version="2.6.2" />
+    <PackageReference Include="MailKit" Version="4.18.2" />
+    <!-- PDFium renders sheet-music pages on the server (same engine as the apps) -->
+    <PackageReference Include="bblanchon.PDFium.Linux" Version="$(PdfiumVersion)" />
+    <PackageReference Include="bblanchon.PDFium.Win32" Version="$(PdfiumVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PracticalMusic.Core\PracticalMusic.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- The About page shows the prompts this software was created from (same convention as the apps). -->
+    <EmbeddedResource Include="..\PracticalMusic.App\Assets\original-prompt.txt" LogicalName="PracticalMusic.Web.original-prompt.txt" />
+    <EmbeddedResource Include="Content\website-prompt.txt" LogicalName="PracticalMusic.Web.website-prompt.txt" />
+    <Content Remove="Content\**" />
+    <None Include="Content\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="PracticalMusic.Web.Tests" />
+  </ItemGroup>
+</Project>

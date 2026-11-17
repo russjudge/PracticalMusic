@@ -32,6 +32,14 @@ Updating: install the newer APK over the old one (same signing key). Data and se
 - The back gesture/button goes back from the timing editor to the Library, closes dialogs, and otherwise
   returns to the Library page.
 
+## Online: the Practical Music website
+
+On the **🌐 Online** page, sign in with your account on the Practical Music website (default
+`https://practicalmusic.russjudge.com`). You then get your organization's books (and their updates), managers can
+upload changes, and you can lead or follow synchronized playback with everyone connected to the website - browsers on
+iPhones and iPads included. This only needs an outgoing HTTPS connection: **no firewall port has to be opened** for it.
+No account yet? *Create an account on the website…* opens the sign-up page. See [WEBSITE.md](WEBSITE.md).
+
 ## Building the APK yourself
 
 Requirements: .NET 10 SDK, the Android workload (`dotnet workload install android`), an Android SDK

@@ -6,7 +6,10 @@ be shared with other devices on the local network and played back in sync on all
 
 Author: **Russ Judge**. Built with the assistance of Claude (Anthropic).
 
-Runs on **Windows**, **Linux** (tested target: Omarchy / Arch) and **Android**.
+Runs on **Windows**, **Linux** (tested target: Omarchy / Arch) and **Android** - and, through the **Practical Music
+website**, in any browser, including **iPhone and iPad** (no App Store needed). The website keeps each organization's
+(church, band …) books in one place, lets managers maintain them and their members, and relays synchronized playback
+between browsers and the apps. See [docs/WEBSITE.md](docs/WEBSITE.md).
 
 ## Features
 
@@ -24,6 +27,8 @@ Runs on **Windows**, **Linux** (tested target: Omarchy / Arch) and **Android**.
   reject), request a book from a device, and **lead/follow synchronized playback** across devices.
 - About page: author credits, a quick-start guide, and a button that shows (and copies) the original
   prompt that was used to create the application (`src/PracticalMusic.App/Assets/original-prompt.txt`).
+- Online page: sign in to the website, download the organization's books (and newer revisions), upload changes
+  (managers), and lead or follow synchronized playback with everyone connected to the website.
 
 ## Repository layout
 
@@ -32,10 +37,14 @@ src/PracticalMusic.Core      models, .pmbook packaging, timing engine, PDFium wr
 src/PracticalMusic.App       shared Avalonia UI (views, view models, page canvas)
 src/PracticalMusic.Desktop   Windows/Linux entry point, LibVLC audio
 src/PracticalMusic.Android   Android entry point, MediaPlayer audio
-tests/PracticalMusic.Core.Tests   xUnit tests (timing, packaging, PDF rendering, transfer, discovery/sync)
+src/PracticalMusic.Web       the website (ASP.NET Core): accounts, organizations, library, browser player/editor, sync hub
+database/                    SQL scripts for the website's MariaDB database
+tests/PracticalMusic.Core.Tests   xUnit tests (timing, packaging, PDF rendering, transfer, discovery/sync, online)
+tests/PracticalMusic.Web.Tests    website tests (pages, API, e-mail flows, sync hub, the apps' online client)
+tests/web-js                      tests of the website's browser code (headless Chrome/Edge)
 tools/TestDataGenerator      generates the app icons and a 10-page / 4-song test PDF (+ demo books)
-packaging/                   build scripts: Windows (zip + Inno Setup), Linux (tar.gz + Omarchy PKGBUILD), Android (APK)
-docs/                        installation guides
+packaging/                   build scripts: Windows (zip + Inno Setup), Linux (tar.gz + Omarchy PKGBUILD), Android (APK), website
+docs/                        installation guides (apps, website server, e-mail)
 ```
 
 ## Building from source
@@ -56,9 +65,12 @@ Packaging (see the scripts for options):
 | Linux (generic) | `./packaging/linux/build-linux.sh` | `dist/practical-music-<ver>-linux-x64.tar.gz` |
 | Omarchy / Arch | `./packaging/linux/omarchy/build-omarchy.sh` | `dist/practical-music-<ver>-1-x86_64.pkg.tar.zst` |
 | Android | `pwsh packaging/android/build-android.ps1` or `./packaging/android/build-android.sh` | `dist/android/PracticalMusic-<ver>.apk` |
+| Website (Linux server) | `pwsh packaging/web/build-web.ps1` or `./packaging/web/build-web.sh` | `dist/practicalmusic-web-<ver>-linux-x64.tar.gz` |
 
 Installation instructions: [docs/INSTALL-Windows.md](docs/INSTALL-Windows.md),
-[docs/INSTALL-Linux.md](docs/INSTALL-Linux.md), [docs/INSTALL-Android.md](docs/INSTALL-Android.md).
+[docs/INSTALL-Linux.md](docs/INSTALL-Linux.md), [docs/INSTALL-Android.md](docs/INSTALL-Android.md); the website:
+[docs/INSTALL-Server-Debian.md](docs/INSTALL-Server-Debian.md) and [docs/EMAIL-SETUP.md](docs/EMAIL-SETUP.md).
+`dotnet run --project src/PracticalMusic.Web` starts the website locally in demo mode (no database needed).
 
 ## Using the app
 
@@ -101,11 +113,23 @@ The Library guides you through four steps; the step chips at the top of the Libr
    sync leader; on other devices press *Follow* next to the leader. When the leader presses play, all
    followers start the same song at the same instant, and pause/seek/song changes are mirrored.
 
+8. **Online** – on the *Online* page, sign in with your account on the Practical Music website (default
+   `https://practicalmusic.russjudge.com`; any installation works). Choose the organization; its books are listed with
+   their state (*not on this device*, *up to date*, *revision N available*, *changed here*) and open with one click
+   (downloaded copies live in the app's `online` folder). Managers upload the open book with *Upload this book* - a new
+   revision on the website; if someone else changed it meanwhile, the app asks before overwriting. *Lead a session*
+   leads on the local network **and** through the website, so browsers (iPhone, iPad, other networks) follow too;
+   people who lead through the website appear on the Online page with a *Follow* button.
+
 ## File format
 
 A `.pmbook` is a ZIP archive containing `book.json` (songs, page ranges, recordings, page start times,
 markers) and, for self-contained books, the media under `media/`. Links-only books keep absolute paths
 or URLs in `book.json`; if a referenced file is missing, the app also looks next to the `.pmbook` file.
+
+Books downloaded from a website also carry an `origin` entry in `book.json` (website, organization, book, revision and a
+fingerprint of the content), which lets the app recognise newer revisions and local changes. Older versions of the app
+ignore it.
 
 ## Data locations
 
@@ -126,7 +150,11 @@ or URLs in `book.json`; if a referenced file is missing, the app also looks next
   first reply arrives the follower uses the send time stamped on the leader's packets, so it never compares
   the two machines' raw clocks.
 
+- **Through the website** (Online page, browsers): only an outgoing HTTPS connection is needed - no port has to be
+  opened on any device. Clocks are measured against the server the same way (ping/pong over the WebSocket). The server
+  itself needs TCP 80/443 open (see docs/INSTALL-Server-Debian.md).
+
 ## Licensing of components
 
 Avalonia UI (MIT), PDFium (BSD-3), LibVLC / LibVLCSharp (LGPL-2.1), CommunityToolkit.Mvvm (MIT),
-SkiaSharp (MIT).
+SkiaSharp (MIT). Website: ASP.NET Core (MIT), MySqlConnector (MIT), Dapper (Apache-2.0), MailKit/MimeKit (MIT).

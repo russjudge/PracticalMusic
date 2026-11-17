@@ -76,6 +76,9 @@ public sealed class Book
     public List<PdfDocumentRef> Documents { get; set; } = new();
     public List<Song> Songs { get; set; } = new();
 
+    /// <summary>Set when the book was downloaded from or uploaded to a Practical Music website; null for purely local books.</summary>
+    public OnlineOrigin? Origin { get; set; }
+
     [JsonIgnore]
     public int TotalPages => Documents.Sum(d => d.PageCount);
 

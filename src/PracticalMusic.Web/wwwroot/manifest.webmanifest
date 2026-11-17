@@ -1,0 +1,16 @@
+{
+  "name": "Practical Music",
+  "short_name": "Practical Music",
+  "description": "Sheet music that follows the recording.",
+  "start_url": "/App",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#14171c",
+  "theme_color": "#0b5cad",
+  "icons": [
+    { "src": "/img/icon-128.png", "sizes": "128x128", "type": "image/png" },
+    { "src": "/img/icon-256.png", "sizes": "256x256", "type": "image/png" },
+    { "src": "/img/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}

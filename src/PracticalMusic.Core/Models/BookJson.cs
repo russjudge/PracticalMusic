@@ -13,7 +13,12 @@ public static class BookJson
         Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) }
     };
 
+    /// <summary>Same as <see cref="Options"/> without indentation (storage, network).</summary>
+    public static readonly JsonSerializerOptions CompactOptions = new(Options) { WriteIndented = false };
+
     public static string Serialize(Book book) => JsonSerializer.Serialize(book, Options);
+
+    public static string SerializeCompact(Book book) => JsonSerializer.Serialize(book, CompactOptions);
 
     public static Book Deserialize(string json) =>
         JsonSerializer.Deserialize<Book>(json, Options) ?? throw new InvalidDataException("book.json is empty");

@@ -1,0 +1,81 @@
+@page "/Admin/User/{id:long}"
+@model AdminUserModel
+@{
+    ViewData["Title"] = Model.Target.FullName;
+}
+<p class="crumbs"><a href="/Admin">Administration</a> › <a href="/Admin/Users">Users</a> › @Model.Target.FullName</p>
+<h1>@Model.Target.FullName</h1>
+<div asp-validation-summary="All" class="alert error" role="alert"></div>
+@if (Model.PasswordLink != null)
+{
+    <div class="alert ok">
+        <p>One-time link to choose a password (valid 24 hours). Give it to @Model.Target.FullName personally:</p>
+        <p><code class="selectable">@Model.PasswordLink</code></p>
+    </div>
+}
+<div class="grid2">
+    <div>
+        <form method="post" class="form">
+            <label>E-mail address (user name) <input asp-for="Email" type="email" required maxlength="254"></label>
+            <label>Name <input asp-for="FullName" required maxlength="120"></label>
+            <label>Phone <input asp-for="Phone" maxlength="40"></label>
+            <label>Mailing address <textarea asp-for="Address" rows="3" maxlength="500"></textarea></label>
+            <label class="check"><input asp-for="IsSiteAdmin" type="checkbox"> Website administrator (full rights)</label>
+            <label class="check"><input asp-for="IsDisabled" type="checkbox"> Disabled (cannot sign in; signs out everywhere)</label>
+            <button type="submit">Save</button>
+        </form>
+        <p class="muted small">Created @Display.When(Model.Target.CreatedAt) · last sign-in @Display.When(Model.Target.LastLoginAt) ·
+            e-mail @(Model.Target.IsEmailVerified ? "confirmed " + Display.Date(Model.Target.EmailVerifiedAt) : "not confirmed")</p>
+        <div class="actions">
+            @if (!Model.Target.IsEmailVerified)
+            {
+                <form method="post" asp-page-handler="Verify" class="inline"><button type="submit" class="small secondary">Mark e-mail as confirmed</button></form>
+            }
+            <form method="post" asp-page-handler="SendReset" class="inline"><button type="submit" class="small secondary">E-mail a password link</button></form>
+            <form method="post" asp-page-handler="ShowLink" class="inline"><button type="submit" class="small secondary" title="When e-mail does not work yet">Show a password link</button></form>
+            <form method="post" asp-page-handler="SignOutApps" class="inline"><button type="submit" class="small secondary">Sign out the apps (@Model.AppCount)</button></form>
+        </div>
+    </div>
+    <div>
+        <div class="card">
+            <h3>Organizations</h3>
+            <table class="table small">
+                <tbody>
+                    @foreach (var m in Model.Memberships)
+                    {
+                        <tr>
+                            <td><a href="/Org/@m.OrgId/Members">@m.Name</a></td>
+                            <td>@Display.RoleName(m.Role)</td>
+                            <td>@Display.StatusName(m.Status)</td>
+                            <td>
+                                <form method="post" asp-page-handler="RemoveMembership" class="inline">
+                                    <input type="hidden" name="orgId" value="@m.OrgId">
+                                    <button type="submit" class="small secondary">Remove</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+            <form method="post" asp-page-handler="AddMembership" class="form inline-form">
+                <label>Add to
+                    <select name="orgId">
+                        @foreach (var o in Model.AllOrgs.Where(o => Model.Memberships.All(m => m.OrgId != o.Id || m.Status != "active")))
+                        {
+                            <option value="@o.Id">@o.Name</option>
+                        }
+                    </select>
+                </label>
+                <label>as <select name="role"><option value="member">Member</option><option value="manager">Manager</option></select></label>
+                <button type="submit" class="small">Add</button>
+            </form>
+        </div>
+        <div class="card danger-zone">
+            <h3>Delete the account</h3>
+            <p>Removes the person and all their memberships. Books they created stay.</p>
+            <form method="post" asp-page-handler="Delete" data-confirm="Delete the account of @Model.Target.FullName for good?">
+                <button type="submit" class="danger">Delete account</button>
+            </form>
+        </div>
+    </div>
+</div>

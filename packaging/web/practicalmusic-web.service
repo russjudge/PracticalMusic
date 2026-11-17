@@ -1,0 +1,40 @@
+# systemd unit for the Practical Music website.
+# Install: sudo cp practicalmusic-web.service /etc/systemd/system/ && sudo systemctl daemon-reload
+#          sudo systemctl enable --now practicalmusic-web
+# Logs:    journalctl -u practicalmusic-web -f
+[Unit]
+Description=Practical Music website (ASP.NET Core, Kestrel on 127.0.0.1:5080 behind Apache)
+After=network-online.target mariadb.service
+Wants=network-online.target mariadb.service
+
+[Service]
+Type=simple
+User=practicalmusic
+Group=practicalmusic
+WorkingDirectory=/opt/practicalmusic
+ExecStart=/opt/practicalmusic/PracticalMusic.Web
+Restart=always
+RestartSec=5
+KillSignal=SIGINT
+TimeoutStopSec=20
+SyslogIdentifier=practicalmusic-web
+Environment=ASPNETCORE_ENVIRONMENT=Production
+Environment=DOTNET_NOLOGO=1
+Environment=DOTNET_PRINT_TELEMETRY_MESSAGE=false
+# this host's settings and secrets (read after the shipped appsettings.json)
+Environment=PRACTICALMUSIC_CONFIG=/etc/practicalmusic/appsettings.json
+
+# hardening: the website only needs its data folder and the network
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/practicalmusic
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+LockPersonality=true
+
+[Install]
+WantedBy=multi-user.target

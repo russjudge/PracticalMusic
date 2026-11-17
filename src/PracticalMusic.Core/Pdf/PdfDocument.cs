@@ -29,6 +29,9 @@ public sealed class PdfDocument : IDisposable
     public int PageCount { get; }
     public string? SourcePath { get; }
 
+    /// <summary>Largest bitmap a page is rendered to (about 200 MB of pixels) - protects against crafted page sizes.</summary>
+    public const long MaxPixels = 50_000_000;
+
     private PdfDocument(byte[] data, string? sourcePath)
     {
         PdfiumNative.EnsureInitialized();
@@ -94,8 +97,10 @@ public sealed class PdfDocument : IDisposable
                 double ph = PdfiumNative.FPDF_GetPageHeightF(page);
                 if (pw <= 0 || ph <= 0) { pw = 612; ph = 792; }
                 var scale = Math.Min(maxWidth / pw, maxHeight / ph);
-                var w = Math.Max(1, (int)Math.Round(pw * scale));
-                var h = Math.Max(1, (int)Math.Round(ph * scale));
+                var w = Math.Max(1, (int)Math.Min(int.MaxValue / 8, Math.Round(pw * scale)));
+                var h = Math.Max(1, (int)Math.Min(int.MaxValue / 8, Math.Round(ph * scale)));
+                if ((long)w * h > MaxPixels)
+                    throw new InvalidDataException($"Page {pageIndex + 1} is too large to render ({w} x {h} pixels).");
 
                 var pixels = new byte[w * h * 4];
                 var handle = GCHandle.Alloc(pixels, GCHandleType.Pinned);

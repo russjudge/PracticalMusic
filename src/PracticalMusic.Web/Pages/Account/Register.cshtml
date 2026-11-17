@@ -1,0 +1,71 @@
+@page
+@model RegisterModel
+@{
+    ViewData["Title"] = "Create an account";
+}
+<div class="narrow">
+    @if (Model.Done)
+    {
+        <h1>Almost there</h1>
+        @if (Model.VerificationRequired)
+        {
+            <div class="alert ok">
+                <p>We sent an e-mail to <b>@Model.Input.Email</b>. Open the link in it to confirm your address.</p>
+                <p>After that, a manager of the organization reviews your request. You will receive an e-mail as soon as you have access.</p>
+            </div>
+            <p class="muted">No e-mail after a few minutes? Check the spam folder, or <a href="/Account/Login">sign in</a> to send it again.</p>
+        }
+        else
+        {
+            <div class="alert ok"><p>Your request was sent to the organization's managers. You will receive an e-mail as soon as you have access.</p></div>
+        }
+    }
+    else
+    {
+        <h1>Create an account</h1>
+        <p>Choose your church or band; one of its managers approves your request. Your e-mail address is your user name.</p>
+        @if (Model.Organizations.Count == 0)
+        {
+            <div class="alert warn">No organization accepts new members at the moment. Ask your organization to contact the website administrator.</div>
+        }
+        else
+        {
+            <form method="post" class="form">
+                <div asp-validation-summary="All" class="alert error" role="alert"></div>
+                <label>Organization
+                    <select asp-for="Input.OrgId" required>
+                        <option value="">- choose -</option>
+                        @foreach (var o in Model.Organizations)
+                        {
+                            <option value="@o.Id">@o.Name (@OrgKinds.Display(o.Kind))</option>
+                        }
+                    </select>
+                </label>
+                <label>Your name
+                    <input asp-for="Input.FullName" autocomplete="name" required maxlength="120">
+                </label>
+                <label>E-mail address
+                    <input asp-for="Input.Email" type="email" autocomplete="email" required maxlength="254">
+                </label>
+                <label>Phone <span class="muted">(optional)</span>
+                    <input asp-for="Input.Phone" type="tel" autocomplete="tel" maxlength="40">
+                </label>
+                <label>Mailing address <span class="muted">(optional)</span>
+                    <textarea asp-for="Input.Address" rows="3" autocomplete="street-address" maxlength="500"></textarea>
+                </label>
+                <label>Password <span class="muted">(at least 8 characters - a short sentence is easy to remember)</span>
+                    <input asp-for="Input.Password" type="password" autocomplete="new-password" required minlength="8" maxlength="200">
+                </label>
+                <label>Repeat the password
+                    <input asp-for="Input.ConfirmPassword" type="password" autocomplete="new-password" required>
+                </label>
+                <label>Message to the managers <span class="muted">(optional - e.g. which group you play in)</span>
+                    <textarea asp-for="Input.Message" rows="2" maxlength="1000"></textarea>
+                </label>
+                <div class="hp" aria-hidden="true"><label>Leave this empty <input asp-for="Input.Website" tabindex="-1" autocomplete="off"></label></div>
+                <button type="submit" class="big">Create my account</button>
+            </form>
+        }
+        <p class="muted">Already have an account? <a href="/Account/Login">Sign in</a> and ask to join another organization from your account page.</p>
+    }
+</div>

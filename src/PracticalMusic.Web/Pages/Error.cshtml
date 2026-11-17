@@ -1,0 +1,10 @@
+@page
+@model ErrorModel
+@{
+    ViewData["Title"] = "Something went wrong";
+}
+<div class="narrow">
+    <h1>Something went wrong</h1>
+    <p>The website could not complete the request. Please try again; if it keeps happening, tell the administrator@(Model.RequestId != null ? $" (reference {Model.RequestId})" : "").</p>
+    <p><a class="button" href="/">Back to the start page</a></p>
+</div>

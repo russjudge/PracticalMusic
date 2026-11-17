@@ -1,0 +1,26 @@
+@page
+@model AccountIndexModel
+@{
+    ViewData["Title"] = "Your account";
+}
+<h1>Your account</h1>
+<nav class="tabs">
+    <a class="active" href="/Account">Contact details</a>
+    <a href="/Account/Password">Password</a>
+    <a href="/Account/Devices">Apps &amp; devices</a>
+    <a href="/Account/Organizations">My organizations</a>
+</nav>
+<div class="narrow left">
+    <form method="post" class="form">
+        <div asp-validation-summary="All" class="alert error" role="alert"></div>
+        <label>E-mail address (your user name)
+            <input value="@Model.Email" disabled>
+        </label>
+        <p class="muted small">To use a different e-mail address, ask the website administrator.</p>
+        <label>Name <input asp-for="FullName" required maxlength="120" autocomplete="name"></label>
+        <label>Phone <input asp-for="Phone" type="tel" maxlength="40" autocomplete="tel"></label>
+        <label>Mailing address <textarea asp-for="Address" rows="3" maxlength="500" autocomplete="street-address"></textarea></label>
+        <button type="submit">Save</button>
+    </form>
+    <p class="muted small">The managers of your organizations can see these details.</p>
+</div>

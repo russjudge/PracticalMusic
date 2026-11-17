@@ -37,6 +37,14 @@ Uninstall from *Settings → Apps* like any other program.
   `"TransferPort"` in `%APPDATA%\PracticalMusic\settings.json`). Linux devices need the same two ports open
   (see INSTALL-Linux.md for the ufw commands).
 
+## Online: the Practical Music website
+
+On the **🌐 Online** page, sign in with your account on the Practical Music website (default
+`https://practicalmusic.russjudge.com`). You then get your organization's books (and their updates), managers can
+upload changes, and you can lead or follow synchronized playback with everyone connected to the website - browsers on
+iPhones and iPads included. This only needs an outgoing HTTPS connection: **no firewall port has to be opened** for it.
+No account yet? *Create an account on the website…* opens the sign-up page. See [WEBSITE.md](WEBSITE.md).
+
 ## Building the packages yourself
 
 Requires the .NET 10 SDK (and optionally Inno Setup 6 for the installer):
@@ -50,6 +58,7 @@ Outputs go to `dist\`.
 ## Where files live
 
 - Settings, imported library and received books that you did not save elsewhere: `%APPDATA%\PracticalMusic`
+  (books downloaded from the website: `%APPDATA%\PracticalMusic\online`)
   (a received book asks where to save it; the *Recent ▾* menu in the Library lists the books you saved or opened)
 - Cache (extracted media of opened books, downloads): `%LOCALAPPDATA%\PracticalMusic\cache` (safe to delete)
 - A crash, if one ever happens, is logged to `%APPDATA%\PracticalMusic\crash.log`

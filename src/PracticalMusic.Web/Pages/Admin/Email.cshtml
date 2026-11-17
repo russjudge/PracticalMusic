@@ -1,0 +1,59 @@
+@page
+@model AdminEmailModel
+@{
+    ViewData["Title"] = "E-mail";
+}
+<h1>Administration</h1>
+<nav class="tabs">
+    <a href="/Admin">Overview</a>
+    <a href="/Admin/Organizations">Organizations</a>
+    <a href="/Admin/Users">Users</a>
+    <a class="active" href="/Admin/Email">E-mail</a>
+</nav>
+<div asp-validation-summary="All" class="alert error" role="alert"></div>
+<div class="card">
+    <p><b>Sending:</b> @Model.Transport</p>
+    <p class="muted">Messages wait in the outbox and are retried after 1, 5, 15, 60, 240 and 720 minutes. Settings: the <code>Email</code> section of
+        /etc/practicalmusic/appsettings.json (see docs/EMAIL-SETUP.md); restart the website after changing it.</p>
+    <form method="post" asp-page-handler="Test" class="form inline-form">
+        <label>Send a test message to <input name="to" type="email" required value="@Model.AdminEmail"></label>
+        <button type="submit">Send now</button>
+    </form>
+    @if (Model.TestResult != null)
+    {
+        <div class="alert @(Model.TestOk ? "ok" : "error")"><pre class="wrap">@Model.TestResult</pre></div>
+    }
+</div>
+
+<h2>Outbox</h2>
+<p>
+    <a class="button small @(Model.Status == null ? "" : "secondary")" href="/Admin/Email">All</a>
+    <a class="button small @(Model.Status == "queued" ? "" : "secondary")" href="?status=queued">Waiting (@Model.Counts.GetValueOrDefault("queued"))</a>
+    <a class="button small @(Model.Status == "failed" ? "" : "secondary")" href="?status=failed">Failed (@Model.Counts.GetValueOrDefault("failed"))</a>
+    <a class="button small @(Model.Status == "sent" ? "" : "secondary")" href="?status=sent">Sent (@Model.Counts.GetValueOrDefault("sent"))</a>
+</p>
+<table class="table small">
+    <thead><tr><th>Queued</th><th>To</th><th>Subject</th><th>Status</th><th>Attempts</th><th>Last error</th><th></th></tr></thead>
+    <tbody>
+        @foreach (var e in Model.Emails)
+        {
+            <tr>
+                <td class="nowrap">@Display.When(e.CreatedAt)</td>
+                <td>@e.ToAddress</td>
+                <td>@e.Subject</td>
+                <td>@e.Status@(e.Status == "queued" && e.Attempts > 0 ? $" (next {Display.When(e.NextAttemptAt)})" : "")</td>
+                <td>@e.Attempts</td>
+                <td class="error-text">@e.LastError</td>
+                <td>
+                    @if (e.Status != "sent")
+                    {
+                        <form method="post" asp-page-handler="Retry" class="inline">
+                            <input type="hidden" name="id" value="@e.Id">
+                            <button type="submit" class="small secondary">Retry now</button>
+                        </form>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

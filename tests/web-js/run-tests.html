@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>running</title>
+<!--
+  Unit tests of the website's browser code (no build tools needed). The timing and sync expectations are the
+  same as in tests/PracticalMusic.Core.Tests, so the browser and the apps behave identically.
+  Run headless (Chrome or Edge):
+    chrome --headless=new --allow-file-access-from-files --virtual-time-budget=5000 --dump-dom tests/web-js/run-tests.html
+  The output contains RESULT: PASS or RESULT: FAIL.
+-->
+<meta name="csrf-token" content="test-token">
+</head>
+<body>
+<!-- the elements main.js expects on /App -->
+<header id="app-bar"><select id="org-select"></select><nav id="app-tabs"><button class="tab" data-view="library"></button></nav><span id="app-title"></span><span id="sync-dot"></span></header>
+<main id="app-main"></main>
+<footer id="status-bar"></footer>
+<div id="dialog-root"></div>
+<script type="application/json" id="app-data">{"user":{"id":1,"name":"Test User","email":"t@example.com","isSiteAdmin":false},"orgs":[],"initial":{"org":null,"book":null,"view":null,"newBook":false},"siteName":"Practical Music","maxUploadMb":600,"syncProtocol":1}</script>
+<pre id="out"></pre>
+<script>window.__errors = [];
+window.addEventListener("error", function (e) { window.__errors.push("load error: " + (e.message || "") + " " + (e.filename || "") + ":" + (e.lineno || "")); }, true);
+window.addEventListener("unhandledrejection", function (e) { var r = e.reason; window.__errors.push("unhandled rejection: " + (r && r.stack || r)); });</script>
+<script type="module" src="tests.js"></script>
+</body>
+</html>

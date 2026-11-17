@@ -1,0 +1,79 @@
+@page
+@model OrganizationsModel
+@{
+    ViewData["Title"] = "My organizations";
+}
+<h1>Your account</h1>
+<nav class="tabs">
+    <a href="/Account">Contact details</a>
+    <a href="/Account/Password">Password</a>
+    <a href="/Account/Devices">Apps &amp; devices</a>
+    <a class="active" href="/Account/Organizations">My organizations</a>
+</nav>
+<div asp-validation-summary="All" class="alert error" role="alert"></div>
+@foreach (var invite in Model.Memberships.Where(m => m.Status == MembershipStatus.Invited && m.IsActive))
+{
+    <div class="alert ok invitation">
+        <p>You are invited to join <b>@invite.Name</b> as a @Display.RoleName(invite.Role).ToLowerInvariant().</p>
+        <form method="post" asp-page-handler="Accept" class="inline">
+            <input type="hidden" name="orgId" value="@invite.OrgId">
+            <button type="submit" class="small">Accept</button>
+        </form>
+        <form method="post" asp-page-handler="Leave" class="inline" data-confirm="Decline the invitation to join @invite.Name?">
+            <input type="hidden" name="orgId" value="@invite.OrgId">
+            <button type="submit" class="small secondary">Decline</button>
+        </form>
+    </div>
+}
+@if (Model.Memberships.Count == 0)
+{
+    <p class="muted">You do not belong to an organization yet.</p>
+}
+else
+{
+    <table class="table">
+        <thead><tr><th>Organization</th><th>Role</th><th>Status</th><th>Since</th><th></th></tr></thead>
+        <tbody>
+            @foreach (var m in Model.Memberships)
+            {
+                <tr>
+                    <td>@m.Name@(m.IsActive ? "" : " (inactive)")</td>
+                    <td>@Display.RoleName(m.Role)</td>
+                    <td>@Display.StatusName(m.Status)</td>
+                    <td>@Display.Date(m.DecidedAt ?? m.RequestedAt)</td>
+                    <td>
+                        @if (m.Status is MembershipStatus.Active or MembershipStatus.Pending)
+                        {
+                            <form method="post" asp-page-handler="Leave" class="inline" data-confirm="@(m.Status == MembershipStatus.Active ? $"Leave {m.Name}? You lose access to its books." : $"Withdraw your request to join {m.Name}?")">
+                                <input type="hidden" name="orgId" value="@m.OrgId">
+                                <button type="submit" class="small secondary">@(m.Status == MembershipStatus.Active ? "Leave" : "Withdraw")</button>
+                            </form>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<h2>Ask to join an organization</h2>
+@if (Model.Joinable.Count == 0)
+{
+    <p class="muted">There is no other organization you can ask to join.</p>
+}
+else
+{
+    <form method="post" asp-page-handler="Join" class="form narrow left">
+        <label>Organization
+            <select name="orgId" required>
+                <option value="">- choose -</option>
+                @foreach (var o in Model.Joinable)
+                {
+                    <option value="@o.Id">@o.Name (@OrgKinds.Display(o.Kind))</option>
+                }
+            </select>
+        </label>
+        <label>Message to the managers <span class="muted">(optional)</span><textarea name="message" rows="2" maxlength="1000"></textarea></label>
+        <button type="submit">Send the request</button>
+    </form>
+}

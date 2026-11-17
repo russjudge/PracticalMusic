@@ -1,0 +1,48 @@
+@page
+@model AppModel
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Antiforgery
+@{
+    Layout = null;
+    var csrf = Antiforgery.GetAndStoreTokens(HttpContext).RequestToken;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="csrf-token" content="@csrf">
+    <title>Practical Music</title>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true">
+    <link rel="stylesheet" href="~/css/app.css" asp-append-version="true">
+    <link rel="manifest" href="~/manifest.webmanifest">
+    <link rel="icon" type="image/png" href="~/img/icon-64.png">
+    <link rel="apple-touch-icon" href="~/img/icon-256.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Practical Music">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#0b5cad">
+    <script type="module" src="~/js/app/main.js" asp-append-version="true"></script>
+</head>
+<body class="music-app">
+    <header class="app-bar" id="app-bar">
+        <a class="brand" href="/" title="Start page"><img src="~/img/icon-64.png" alt="" width="26" height="26"></a>
+        <select id="org-select" aria-label="Organization"></select>
+        <nav class="app-tabs" id="app-tabs">
+            <button data-view="library" class="tab">📚 Library</button>
+            <button data-view="player" class="tab">▶ Play</button>
+            <button data-view="share" class="tab">🔗 Share</button>
+            <button data-view="about" class="tab">ℹ About</button>
+        </nav>
+        <span class="app-title" id="app-title"></span>
+        <span class="sync-dot" id="sync-dot" title="Connection for synchronized playback"></span>
+    </header>
+    <main id="app-main" class="app-main">
+        <div class="app-loading">Loading…</div>
+    </main>
+    <footer class="status-bar" id="status-bar"></footer>
+    <div id="dialog-root"></div>
+    <script type="application/json" id="app-data">@Html.Raw(Model.BootJson)</script>
+    <noscript><p class="alert error">The music app needs JavaScript.</p></noscript>
+</body>
+</html>

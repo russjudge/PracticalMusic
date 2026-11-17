@@ -1,0 +1,65 @@
+@using Microsoft.Extensions.Options
+@using PracticalMusic.Web.Security
+@inject CurrentUser Me
+@inject IOptions<SiteOptions> SiteOptions
+@{
+    var user = await Me.GetAsync();
+    var siteName = SiteOptions.Value.Name;
+    var title = ViewData["Title"] as string;
+    var bodyClass = ViewData["BodyClass"] as string;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>@(string.IsNullOrEmpty(title) ? siteName : $"{title} - {siteName}")</title>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true">
+    <link rel="manifest" href="~/manifest.webmanifest">
+    <link rel="icon" type="image/png" href="~/img/icon-64.png">
+    <link rel="apple-touch-icon" href="~/img/icon-256.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="@siteName">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#0b5cad">
+    @await RenderSectionAsync("Head", required: false)
+</head>
+<body class="@bodyClass">
+    <header class="topbar">
+        <a class="brand" href="/"><img src="~/img/icon-64.png" alt="" width="28" height="28"><span>@siteName</span></a>
+        <input type="checkbox" id="nav-toggle" class="nav-toggle" aria-label="Menu">
+        <label for="nav-toggle" class="nav-burger" aria-hidden="true">☰</label>
+        <nav class="topnav">
+            @if (user != null)
+            {
+                <a href="/App">🎵 Music</a>
+                <a href="/">Organizations</a>
+                <a href="/Account">Account</a>
+                @if (user.IsSiteAdmin)
+                {
+                    <a href="/Admin">Admin</a>
+                }
+                <form method="post" asp-page="/Account/Logout" class="inline">
+                    <button type="submit" class="linklike">Sign out</button>
+                </form>
+            }
+            else
+            {
+                <a href="/About">About</a>
+                <a href="/Account/Login">Sign in</a>
+                <a class="button small" href="/Account/Register">Sign up</a>
+            }
+        </nav>
+    </header>
+    <main class="page">
+        <partial name="_Flash" />
+        @RenderBody()
+    </main>
+    <footer class="footer">
+        <a href="/About">About</a> · <a href="/Downloads">Apps for Windows, Linux &amp; Android</a> · <span>Practical Music by Russ Judge</span>
+    </footer>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

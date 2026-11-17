@@ -180,7 +180,7 @@ public static class BookPackage
         using (var reader = new StreamReader(manifestEntry.Open()))
             book = BookJson.Deserialize(await reader.ReadToEndAsync(ct));
 
-        var bookCache = Path.Combine(cacheRoot, Sanitize(book.Id));
+        var bookCache = BookCacheFolder(cacheRoot, book.Id);
         var packageDir = Path.GetDirectoryName(Path.GetFullPath(path)) ?? "";
 
         foreach (var src in book.AllMediaSources())
@@ -192,7 +192,10 @@ public static class BookPackage
                 {
                     var entry = zip.GetEntry(src.EntryName);
                     if (entry == null) break;
-                    var target = Path.Combine(bookCache, src.EntryName.Replace('/', Path.DirectorySeparatorChar));
+                    // book.json comes from another device or a website: never let an entry name such as
+                    // "../../x" place a file outside this book's cache folder.
+                    var target = SafeCachePath(bookCache, src.EntryName);
+                    if (target == null) break;
                     Directory.CreateDirectory(Path.GetDirectoryName(target)!);
                     var fi = new FileInfo(target);
                     if (!fi.Exists || fi.Length != entry.Length)
@@ -226,6 +229,45 @@ public static class BookPackage
         return book;
     }
 
+    /// <summary>
+    /// The folder a book's embedded files are extracted to. Book ids made by the apps and the website are plain
+    /// (letters, digits, '-', '_') and are used as they are; anything else in a received book.json - "..", a very
+    /// long text, a reserved device name - is replaced by a hash, so it can never point somewhere else.
+    /// </summary>
+    public static string BookCacheFolder(string cacheRoot, string? bookId)
+    {
+        var id = bookId ?? "";
+        var plain = id.Length is > 0 and <= 64 && id.All(c => char.IsAsciiLetterOrDigit(c) || c is '-' or '_') && !IsDeviceName(id);
+        var name = plain
+            ? id
+            : "id-" + Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(id)))[..32].ToLowerInvariant();
+        return Path.Combine(cacheRoot, name);
+    }
+
+    /// <summary>Names Windows reserves for devices (CON, NUL, COM1 …).</summary>
+    private static bool IsDeviceName(string name) =>
+        name.ToUpperInvariant() is "CON" or "PRN" or "AUX" or "NUL" ||
+        (name.Length == 4 && char.IsAsciiDigit(name[3]) &&
+         (name.StartsWith("COM", StringComparison.OrdinalIgnoreCase) || name.StartsWith("LPT", StringComparison.OrdinalIgnoreCase)));
+
+    /// <summary>
+    /// The cache location for a package entry, or null when the entry name would resolve outside
+    /// <paramref name="bookCache"/> (".." segments). Every segment is sanitized, so separators, drive
+    /// letters and characters that are invalid on this platform cannot change where the file goes.
+    /// </summary>
+    public static string? SafeCachePath(string bookCache, string entryName)
+    {
+        if (string.IsNullOrWhiteSpace(entryName)) return null;
+        var root = Path.GetFullPath(bookCache);
+        var rootWithSep = root.EndsWith(Path.DirectorySeparatorChar) ? root : root + Path.DirectorySeparatorChar;
+        var parts = entryName.Replace('\\', '/').Split('/', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length == 0 || parts.Any(p => p is "." or "..")) return null;
+        var target = Path.GetFullPath(Path.Combine(root, Path.Combine(parts.Select(Sanitize).ToArray())));
+        return target.StartsWith(rootWithSep, OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal)
+            ? target
+            : null;
+    }
+
     private static string UniqueName(HashSet<string> used, int index, string fileName)
     {
         var name = Sanitize(string.IsNullOrWhiteSpace(fileName) ? $"media{index}" : fileName);
@@ -241,6 +283,7 @@ public static class BookPackage
         var invalid = Path.GetInvalidFileNameChars();
         var chars = name.Select(c => invalid.Contains(c) || c == '/' || c == '\\' ? '_' : c).ToArray();
         var s = new string(chars).Trim();
-        return string.IsNullOrEmpty(s) ? "file" : s;
+        // "." and ".." are not names: combined with a folder they mean "this folder" and "the folder above"
+        return s.Trim('.', ' ').Length == 0 ? "file" : s;
     }
 }
